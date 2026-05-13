@@ -26,5 +26,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
-# Use the dynamic PORT environment variable provided by Render, defaulting to 8000
-CMD ["sh", "-c", "gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:${PORT:-8000}"]
+# Increase timeout to 300s to allow heavy ML models to load without being killed by Gunicorn
+CMD ["sh", "-c", "gunicorn -w 1 -k uvicorn.workers.UvicornWorker --timeout 300 main:app --bind 0.0.0.0:${PORT:-8000}"]
