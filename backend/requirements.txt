@@ -160,7 +160,7 @@ python-dotenv==1.2.2
 python-jose==3.5.0
 python-json-logger==4.1.0
 python-multipart==0.0.28
-pywinpty==3.0.3
+# pywinpty removed for Linux compatibility
 PyYAML==6.0.3
 pyzmq==27.1.0
 redis==7.4.0
