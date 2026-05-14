@@ -17,9 +17,9 @@ const FEATURE_COLORS: Record<string, string> = {
 };
 
 const heatVal = (v: number): string => {
-  if (v >= 0.7)  return "rgba(244,63,94,0.75)";
-  if (v >= 0.4)  return "rgba(244,63,94,0.45)";
-  if (v >= 0.2)  return "rgba(245,158,11,0.4)";
+  if (v >= 0.7) return "rgba(244,63,94,0.75)";
+  if (v >= 0.4) return "rgba(244,63,94,0.45)";
+  if (v >= 0.2) return "rgba(245,158,11,0.4)";
   if (v >= -0.2) return "rgba(255,255,255,0.08)";
   if (v >= -0.4) return "rgba(6,182,212,0.35)";
   if (v >= -0.7) return "rgba(6,182,212,0.55)";
@@ -233,7 +233,7 @@ export default function CorrelationsPage() {
                       label={{ value: currentPair.xLabel, position: "insideBottom", offset: -3, style: { fill: "#6b7280", fontSize: 10 } }} />
                     <YAxis dataKey="y" name={currentPair.yLabel} tick={{ fill: "var(--chart-tick)", fontSize: 10 }}
                       label={{ value: currentPair.yLabel, angle: -90, position: "insideLeft", offset: 10, style: { fill: "#6b7280", fontSize: 10 } }} />
-                    <Tooltip 
+                    <Tooltip
                       formatter={(v: any, name: any) => [typeof v === "number" ? v.toFixed(1) : v, name]} />
                     <Scatter data={currentPair.points} fill="#06b6d4" fillOpacity={0.6} r={4} animationDuration={600} />
                   </ScatterChart>
@@ -257,7 +257,7 @@ export default function CorrelationsPage() {
                 <XAxis dataKey="xMean" tick={{ fill: "var(--chart-tick)", fontSize: 10 }}
                   label={{ value: `${currentPair.xLabel} (bucket mean)`, position: "insideBottom", offset: -3, style: { fill: "#6b7280", fontSize: 10 } }} />
                 <YAxis tick={{ fill: "var(--chart-tick)", fontSize: 10 }} />
-                <Tooltip  />
+                <Tooltip />
                 <Bar dataKey="yMean" name={`Mean ${currentPair.yLabel}`} fill="#06b6d4" radius={[4, 4, 0, 0]} animationDuration={800} />
               </BarChart>
             </ResponsiveContainer>
