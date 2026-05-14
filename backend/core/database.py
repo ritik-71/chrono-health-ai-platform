@@ -44,30 +44,10 @@ AsyncSessionLocal = async_sessionmaker(
 Base = declarative_base()
 
 async def get_db():
-    session = None
-    try:
-        session = AsyncSessionLocal()
-        # Test connection immediately
-        await session.execute(select(1))
-        yield session
-    except Exception as e:
-        print(f"Primary DB failure: {e}. Switching to local SQLite.")
-        if session:
-            await session.close()
-        
-        # Create emergency fallback session
-        fallback_engine = create_async_engine("sqlite+aiosqlite:///./chronohealth.db")
-        fallback_session_factory = async_sessionmaker(fallback_engine, class_=AsyncSession, expire_on_commit=False)
-        fallback_session = fallback_session_factory()
+    async with AsyncSessionLocal() as session:
         try:
-            yield fallback_session
-            await fallback_session.commit()
+            yield session
+            await session.commit()
         except Exception:
-            await fallback_session.rollback()
+            await session.rollback()
             raise
-        finally:
-            await fallback_session.close()
-            await fallback_engine.dispose()
-    finally:
-        if session:
-            await session.close()
