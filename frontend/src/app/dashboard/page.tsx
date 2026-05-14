@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useChronoTheme } from "@/lib/useChronoTheme";
+import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import {
   Activity, BrainCircuit, UploadCloud, FileSpreadsheet, Moon, Sun, Menu, Bell,
@@ -76,6 +77,8 @@ export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const { isDark, tooltipStyle, chartGridStroke, chartTickFill } = useChronoTheme();
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const dashboardRef = useRef<HTMLDivElement>(null);
   
   // API States
   const [predictData, setPredictData] = useState<any>(null);
@@ -141,13 +144,43 @@ export default function Dashboard() {
     document.body.removeChild(link);
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     setIsExporting(true);
-    setTimeout(() => { window.print(); setIsExporting(false); }, 500);
+    try {
+      const el = dashboardRef.current;
+      if (!el) { setIsExporting(false); return; }
+
+      // Dynamically import html2canvas and jsPDF
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ]);
+
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: isDark ? '#0a0a0f' : '#ffffff',
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height],
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('ChronoHealth_Dashboard_Report.pdf');
+    } catch (err) {
+      console.error('PDF export failed, falling back to print:', err);
+      window.print();
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto pb-20 custom-scrollbar">
+    <div ref={dashboardRef} className="w-full h-full overflow-y-auto pb-20 custom-scrollbar">
       <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
           <div>
@@ -350,7 +383,7 @@ export default function Dashboard() {
                   />
                 </div>
               </div>
-              <button className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-xl shadow-indigo-600/20 active:scale-[0.98]">
+              <button onClick={() => router.push('/dashboard/explainability')} className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-xl shadow-indigo-600/20 active:scale-[0.98]">
                 Open Explainability Center
               </button>
             </div>

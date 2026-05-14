@@ -99,7 +99,87 @@ const Navbar = () => {
   );
 };
 
+const SimulationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const [step, setStep] = useState(0);
+  const steps = [
+    { label: "Wearable Data Ingestion", detail: "HRV: 45.5ms • Sleep: 6.2h • Cortisol: 15μg/dL • Light: 5000lux", icon: Watch, color: "#06b6d4" },
+    { label: "CII Engine Processing", detail: "Circadian Interaction Index = f(stress, sleep, cortisol, light) → CII: 86.2", icon: Activity, color: "#8b5cf6" },
+    { label: "XGBoost Inference", detail: "Stress Risk: High (89%) • Sleep Disorder: 35% • Fatigue: Moderate", icon: Cpu, color: "#f43f5e" },
+    { label: "RL Agent Scheduling", detail: "Q-Learning optimal action: Morning light therapy (10,000 lux) + CBT-I", icon: Brain, color: "#f59e0b" },
+    { label: "Chronotherapy Delivered", detail: "Intervention scheduled: 07:30 AM light exposure + 22:00 stimulus control", icon: Zap, color: "#10b981" },
+  ];
+
+  useEffect(() => {
+    if (!isOpen) { setStep(0); return; }
+    const interval = setInterval(() => {
+      setStep(prev => (prev < steps.length - 1 ? prev + 1 : prev));
+    }, 1800);
+    return () => clearInterval(interval);
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
+      onClick={onClose}>
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", damping: 25 }}
+        className="w-full max-w-xl rounded-3xl border border-theme bg-[#0a0e1a] p-8 shadow-2xl relative overflow-hidden"
+        onClick={e => e.stopPropagation()}>
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5 pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-white">AI Pipeline Simulation</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors text-2xl leading-none">&times;</button>
+          </div>
+          <div className="space-y-3">
+            {steps.map((s, i) => {
+              const isActive = i === step;
+              const isDone = i < step;
+              return (
+                <motion.div key={i}
+                  initial={{ opacity: 0.3, x: -10 }}
+                  animate={{ opacity: isDone || isActive ? 1 : 0.3, x: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                  className={`p-4 rounded-xl border transition-all duration-500 ${
+                    isActive ? "border-cyan-500/50 bg-cyan-500/10 shadow-lg shadow-cyan-500/10" :
+                    isDone ? "border-green-500/30 bg-green-500/5" : "border-white/5 bg-white/[0.02]"
+                  }`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDone ? "bg-green-500/20" : isActive ? "bg-cyan-500/20" : "bg-white/5"}`}>
+                      <s.icon className="w-4 h-4" style={{ color: isDone ? "#10b981" : isActive ? s.color : "#6b7280" }} />
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-sm font-semibold ${isDone ? "text-green-400" : isActive ? "text-white" : "text-gray-500"}`}>{s.label}</p>
+                      {(isDone || isActive) && (
+                        <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                          className="text-[11px] text-gray-400 mt-1 font-mono">{s.detail}</motion.p>
+                      )}
+                    </div>
+                    {isDone && <span className="text-green-400 text-xs font-bold">✓</span>}
+                    {isActive && <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+          {step >= steps.length - 1 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+              className="mt-6 p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-center">
+              <p className="text-green-400 font-bold text-sm">✓ Pipeline Complete — Intervention Scheduled</p>
+              <p className="text-[11px] text-gray-400 mt-1">Total inference latency: 1.2s • CII synchronized</p>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const Hero = () => {
+  const [showSim, setShowSim] = useState(false);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       <ParticleBackground />
@@ -133,12 +213,13 @@ const Hero = () => {
                 Access AI Dashboard <ArrowRight className="w-5 h-5" />
               </button>
             </Link>
-            <button className="w-full sm:w-auto px-8 py-4 text-base font-bold text-theme-primary bg-surface border border-theme rounded-full hover:bg-surface-hover transition-all flex items-center justify-center gap-2 backdrop-blur-md">
+            <button onClick={() => setShowSim(true)} className="w-full sm:w-auto px-8 py-4 text-base font-bold text-theme-primary bg-surface border border-theme rounded-full hover:bg-surface-hover transition-all flex items-center justify-center gap-2 backdrop-blur-md">
               <Play className="w-5 h-5" /> Watch Simulation
             </button>
           </div>
         </motion.div>
       </div>
+      <SimulationModal isOpen={showSim} onClose={() => setShowSim(false)} />
     </section>
   );
 };

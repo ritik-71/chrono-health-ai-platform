@@ -8,13 +8,15 @@ import AIAssistant from "@/components/AIAssistant";
 import { useChronoTheme } from "@/lib/useChronoTheme";
 import {
   Activity, BrainCircuit, UploadCloud, FileSpreadsheet, Moon, Sun, Menu, Bell,
-  Search, Settings, User, HeartPulse, TrendingUp, Zap, MoonStar, Layers, Clock, Sparkles, Calendar, LogOut
+  Search, Settings, User, HeartPulse, TrendingUp, Zap, MoonStar, Layers, Clock, Sparkles, Calendar, LogOut, Home, Mail
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isDark, toggleTheme, mounted } = useChronoTheme();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -28,9 +30,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router]);
 
   useEffect(() => {
-    // Close mobile menu on route change
+    // Close mobile menu and dropdowns on route change
     setIsMobileMenuOpen(false);
+    setShowNotifications(false);
+    setShowProfile(false);
   }, [pathname]);
+
+  useEffect(() => {
+    // Close dropdowns on any outside click
+    const handleClickOutside = () => {
+      setShowNotifications(false);
+      setShowProfile(false);
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("chrono_auth_token");
@@ -86,14 +100,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <div className="overflow-y-auto custom-scrollbar">
           <div className="p-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
                 <BrainCircuit className="text-white w-6 h-6" />
               </div>
               <span className={`text-lg font-bold bg-clip-text text-transparent ${isDark ? "bg-gradient-to-r from-white to-gray-400" : "bg-gradient-to-r from-gray-900 to-gray-600"}`}>
                 ChronoHealth
               </span>
-            </div>
+            </Link>
             {isMobileMenuOpen && (
               <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-2 hover:bg-white/10 rounded-lg">
                 <Settings className="w-5 h-5" style={{ color: 'var(--muted)' }} />
@@ -173,14 +187,68 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-[var(--surface-hover)] transition-colors">
               {isDark ? <Sun className="w-5 h-5" style={{ color: 'var(--muted)' }} /> : <MoonStar className="w-5 h-5" style={{ color: 'var(--muted)' }} />}
             </button>
-            <button className="relative p-2 rounded-full hover:bg-[var(--surface-hover)] transition-colors group">
-              <Bell className="w-5 h-5 group-hover:text-cyan-500" style={{ color: 'var(--muted)' }} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full" style={{ borderWidth: '2px', borderColor: 'var(--notification-ring)' }} />
-            </button>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 p-[2px] cursor-pointer shadow-lg hover:scale-110 transition-transform active:scale-95">
-              <div className="w-full h-full rounded-full flex items-center justify-center" style={{ background: 'var(--background)' }}>
-                <User className={`w-4 h-4 ${isDark ? "text-cyan-400" : "text-cyan-600"}`} />
+            <div className="relative">
+              <button onClick={(e) => { e.stopPropagation(); setShowNotifications(!showNotifications); setShowProfile(false); }} className="relative p-2 rounded-full hover:bg-[var(--surface-hover)] transition-colors group">
+                <Bell className="w-5 h-5 group-hover:text-cyan-500" style={{ color: 'var(--muted)' }} />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full" style={{ borderWidth: '2px', borderColor: 'var(--notification-ring)' }} />
+              </button>
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-2 w-80 rounded-2xl shadow-xl border overflow-hidden z-50"
+                    style={{ background: 'var(--surface)', borderColor: 'var(--card-border)' }}>
+                    <div className="p-4 border-b" style={{ borderColor: 'var(--card-border)' }}>
+                      <h4 className="font-bold text-sm">Notifications</h4>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      <div className="p-4 border-b hover:bg-[var(--surface-hover)] transition-colors cursor-pointer" style={{ borderColor: 'var(--card-border)' }}>
+                        <div className="text-xs font-bold text-rose-500 mb-1">High Stress Alert</div>
+                        <div className="text-sm">Patient shows elevated stress risk index (89%).</div>
+                        <div className="text-[10px] mt-2" style={{ color: 'var(--muted)' }}>10 minutes ago</div>
+                      </div>
+                      <div className="p-4 hover:bg-[var(--surface-hover)] transition-colors cursor-pointer">
+                        <div className="text-xs font-bold text-cyan-500 mb-1">CII Synchronized</div>
+                        <div className="text-sm">Circadian phase successfully aligned.</div>
+                        <div className="text-[10px] mt-2" style={{ color: 'var(--muted)' }}>2 hours ago</div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            
+            <div className="relative">
+              <div onClick={(e) => { e.stopPropagation(); setShowProfile(!showProfile); setShowNotifications(false); }} className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 p-[2px] cursor-pointer shadow-lg hover:scale-110 transition-transform active:scale-95">
+                <div className="w-full h-full rounded-full flex items-center justify-center" style={{ background: 'var(--background)' }}>
+                  <User className={`w-4 h-4 ${isDark ? "text-cyan-400" : "text-cyan-600"}`} />
+                </div>
               </div>
+              <AnimatePresence>
+                {showProfile && (
+                  <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-2 w-56 rounded-2xl shadow-xl border overflow-hidden z-50 py-2"
+                    style={{ background: 'var(--surface)', borderColor: 'var(--card-border)' }}>
+                    <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--card-border)' }}>
+                      <p className="text-sm font-semibold">Clinician User</p>
+                      <p className="text-xs" style={{ color: 'var(--muted)' }}>admin@chronohealth.ai</p>
+                    </div>
+                    <div className="p-2">
+                      <Link href="/" className="flex items-center gap-3 px-3 py-2 text-sm rounded-xl hover:bg-[var(--surface-hover)] transition-colors">
+                        <Home className="w-4 h-4 text-cyan-500" />
+                        <span>Home Page</span>
+                      </Link>
+                      <button className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl hover:bg-[var(--surface-hover)] transition-colors text-left">
+                        <Settings className="w-4 h-4 text-indigo-500" />
+                        <span>Account Settings</span>
+                      </button>
+                      <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl hover:bg-rose-500/10 text-rose-500 transition-colors text-left mt-1">
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </header>
