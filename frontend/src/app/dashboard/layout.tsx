@@ -8,7 +8,7 @@ import AIAssistant from "@/components/AIAssistant";
 import { useChronoTheme } from "@/lib/useChronoTheme";
 import {
   Activity, BrainCircuit, UploadCloud, FileSpreadsheet, Moon, Sun, Menu, Bell,
-  Search, Settings, User, HeartPulse, TrendingUp, Zap, MoonStar, Layers, Clock, Sparkles, Calendar
+  Search, Settings, User, HeartPulse, TrendingUp, Zap, MoonStar, Layers, Clock, Sparkles, Calendar, LogOut
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -31,6 +31,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // Close mobile menu on route change
     setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("chrono_auth_token");
+    localStorage.removeItem("chrono_user");
+    router.push("/login");
+  };
 
   const navItems = [
     { icon: Activity, label: "AI Dashboard", href: "/dashboard" },
@@ -116,7 +122,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 space-y-4">
           <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 relative overflow-hidden group cursor-pointer">
             <div className="absolute inset-0 bg-indigo-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
             <h4 className="text-sm font-semibold text-indigo-400 mb-1 relative z-10">Clinical Pro</h4>
@@ -125,6 +131,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               Model Registry
             </button>
           </div>
+
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-rose-500/10 text-rose-500/70 hover:text-rose-500 border border-transparent hover:border-rose-500/20"
+          >
+            <LogOut className="w-5 h-5 transition-transform duration-300 group-hover:-translate-x-1" />
+            <span className="text-sm font-medium">Log Out</span>
+          </button>
         </div>
       </motion.aside>
 
