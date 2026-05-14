@@ -56,6 +56,15 @@ async def lifespan(app: FastAPI):
                     await conn.execute(text("ALTER TABLE prediction_history ADD COLUMN light_exposure FLOAT;"))
                     logger.info("Explainability columns added.")
                 
+                # Check for CII history component columns
+                res_cii = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='cii_history' AND column_name='stress_sleep_correlation';"))
+                if not res_cii.scalar():
+                    logger.info("Migrating database: Adding component columns to cii_history...")
+                    await conn.execute(text("ALTER TABLE cii_history ADD COLUMN stress_sleep_correlation FLOAT;"))
+                    await conn.execute(text("ALTER TABLE cii_history ADD COLUMN phase_shift_rate FLOAT;"))
+                    await conn.execute(text("ALTER TABLE cii_history ADD COLUMN zeitgeber_score FLOAT;"))
+                    logger.info("CII component columns added.")
+
                 logger.info("Migration successful.")
             except Exception as me:
                 logger.warning(f"Column migration check/apply failed: {me}")

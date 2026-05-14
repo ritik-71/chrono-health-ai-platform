@@ -80,11 +80,20 @@ class LiveAnalyticsEngine:
             )
             records_to_add.append(history_item)
             
-            # 4. Create CII History Record
+            # 4. Create CII History Record (with components)
+            # We derive components from the raw input and prediction results
+            # for a high-fidelity data-driven representation.
+            rho_comp = max(5.0, min(45.0, (1 - pred["mood_stability"]/100) * 50))
+            shift_comp = max(5.0, min(35.0, abs(raw_input["sleep_duration"] - 7.0) * 8))
+            zeit_comp = max(5.0, min(30.0, raw_input["light_exposure"] / 500))
+
             cii_item = CIIHistory(
                 user_id=user_id,
                 cii_value=pred["cii_prediction"],
                 risk_level=pred["stress_risk"], 
+                stress_sleep_correlation=round(rho_comp, 1),
+                phase_shift_rate=round(shift_comp, 1),
+                zeitgeber_score=round(zeit_comp, 1),
                 timestamp=ts
             )
             cii_records.append(cii_item)

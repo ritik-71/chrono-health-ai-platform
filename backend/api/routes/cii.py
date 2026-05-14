@@ -31,13 +31,28 @@ async def get_real_cii(db: AsyncSession = Depends(get_db)):
             )
             trend_records = trend_result.scalars().all()
             
+            cii_val = latest_record.cii_value
+            
+            # Re-generate interpretation based on the stored value for consistency
+            if cii_val < 40:
+                risk = "Low Risk"
+                interpretation = "Circadian rhythms are stable and highly synchronized with environmental cues."
+            elif cii_val < 70:
+                risk = "Moderate Risk"
+                interpretation = "Mild misalignment detected. Phase delay may be occurring due to evening stress or light exposure."
+            else:
+                risk = "High Risk"
+                interpretation = "Severe circadian disruption. High stress correlation indicates a self-perpetuating feedback loop of insomnia and hyperarousal."
+
             return {
-                "current_cii": latest_record.cii_value,
-                "risk_category": latest_record.risk_level,
+                "current_cii": cii_val,
+                "risk_category": risk,
+                "trend_direction": "upward" if cii_val > 60 else "stable",
+                "interpretation": interpretation,
                 "components": {
-                    "stress_sleep_correlation": latest_record.stress_sleep_correlation,
-                    "phase_shift_rate": latest_record.phase_shift_rate,
-                    "external_zeitgebers": latest_record.zeitgeber_score
+                    "stress_sleep_correlation": latest_record.stress_sleep_correlation or 0.0,
+                    "phase_shift_rate": latest_record.phase_shift_rate or 0.0,
+                    "external_zeitgebers": latest_record.zeitgeber_score or 0.0
                 },
                 "historical_trend": [r.cii_value for r in reversed(trend_records)]
             }

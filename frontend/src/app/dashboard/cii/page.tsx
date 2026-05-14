@@ -8,6 +8,7 @@ import {
   Zap, Activity, BrainCircuit, AlertTriangle, CheckCircle, Clock, 
   Info, TrendingUp, Cpu, HeartPulse
 } from "lucide-react";
+import api from "@/lib/api";
 import { 
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   PieChart, Pie, Cell
@@ -17,8 +18,10 @@ export default function CIIPage() {
   const { isDark, tooltipStyle } = useChronoTheme();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetchCII();
     const interval = setInterval(fetchCII, 10000); // Live poll every 10s
     return () => clearInterval(interval);
@@ -26,8 +29,10 @@ export default function CIIPage() {
 
   const fetchCII = async () => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/cii`);
-      setData(res.data);
+      const res = await api.get("/api/cii");
+      if (res.data) {
+        setData(res.data);
+      }
     } catch (error) {
       console.error("Failed to fetch CII data", error);
     } finally {
@@ -35,7 +40,7 @@ export default function CIIPage() {
     }
   };
 
-  if (loading || !data) {
+  if (!mounted || loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 pb-20">
         <Activity className="w-8 h-8 text-cyan-500 animate-spin" />
@@ -44,17 +49,33 @@ export default function CIIPage() {
     );
   }
 
-  // Formatting historical trend for LineChart
-  const trendData = data.historical_trend.map((val: number, i: number) => ({
+  // Fallback for when data is missing or API failed
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 pb-20">
+        <AlertTriangle className="w-8 h-8 text-amber-500" />
+        <p style={{ color: 'var(--muted)' }}>Unable to load live CII data.</p>
+        <button 
+          onClick={() => { setLoading(true); fetchCII(); }}
+          className="px-4 py-2 rounded-xl bg-surface border border-theme text-xs hover:bg-white/10 transition"
+        >
+          Retry Analysis
+        </button>
+      </div>
+    );
+  }
+
+  // Formatting historical trend for LineChart - with safety checks
+  const trendData = (data.historical_trend || []).map((val: number, i: number) => ({
     day: `Day ${i + 1}`,
     cii: val
   }));
 
-  // Formatting components for PieChart
+  // Formatting components for PieChart - with safety checks
   const pieData = [
-    { name: "Stress-Sleep Correlation", value: data.components.stress_sleep_correlation, color: "#f43f5e" },
-    { name: "Phase Shift Rate", value: data.components.phase_shift_rate, color: "#3b82f6" },
-    { name: "External Zeitgebers", value: data.components.external_zeitgebers, color: "#10b981" }
+    { name: "Stress-Sleep Correlation", value: data.components?.stress_sleep_correlation || 0, color: "#f43f5e" },
+    { name: "Phase Shift Rate", value: data.components?.phase_shift_rate || 0, color: "#3b82f6" },
+    { name: "External Zeitgebers", value: data.components?.external_zeitgebers || 0, color: "#10b981" }
   ];
 
   // Risk configurations
@@ -159,8 +180,8 @@ export default function CIIPage() {
               <span className="absolute -right-6 top-2 text-xl text-theme-muted">/100</span>
             </div>
             <div className="mt-6 flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/50 border border-theme">
-              <TrendingUp className={`w-4 h-4 ${data.trend_direction === 'upward' ? 'text-red-400' : 'text-green-400'}`} />
-              <span className="text-xs font-medium text-theme-primary">Trend: {data.trend_direction}</span>
+              <TrendingUp className={`w-4 h-4 ${(data.trend_direction || 'stable') === 'upward' ? 'text-red-400' : 'text-green-400'}`} />
+              <span className="text-xs font-medium text-theme-primary">Trend: {data.trend_direction || 'Analyzing...'}</span>
             </div>
           </motion.div>
         </div>
@@ -180,7 +201,7 @@ export default function CIIPage() {
               <h3 className="text-xl font-bold">AI Clinical Interpretation</h3>
             </div>
             <p className="text-theme-primary leading-relaxed text-lg mb-6">
-              "{data.interpretation}"
+              "{data.interpretation || 'No interpretation available for current metrics.'}"
             </p>
             
             <h4 className="text-sm font-bold text-theme-muted uppercase tracking-widest mb-4 border-b border-theme pb-2">Recommended Interventions</h4>
