@@ -53,17 +53,10 @@ app = FastAPI(
     debug=settings.DEBUG
 )
 
-# Corrected CORS for development and production
-allowed_origins = settings.ALLOWED_ORIGINS if settings.ENVIRONMENT == "production" else [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001"
-]
-
+# Simplified CORS for production stability
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
