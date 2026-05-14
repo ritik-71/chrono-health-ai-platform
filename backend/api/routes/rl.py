@@ -10,6 +10,7 @@ from core.database import get_db
 from models.rl import RLIntervention
 from models.user import User
 import random
+from datetime import datetime, timedelta
 
 router = APIRouter()
 
@@ -79,12 +80,38 @@ async def get_real_rl_simulation(db: AsyncSession = Depends(get_db)):
             reward_evolution = [{"episode": 1, "reward": 0}]
 
         # Adaptive Intervention Scheduling Timeline - Driven by actual historical context
-        timeline = [
-            {"time": "08:00 AM", "intervention": "Bright Light Therapy (10k lux)", "expected_reward": "+18.2", "status": "Completed"},
-            {"time": "02:00 PM", "intervention": best_action, "expected_reward": f"+{round(float(best_q),1)}", "status": "Scheduled"},
-            {"time": "08:30 PM", "intervention": "Screen Dimming & Blue Light Filter", "expected_reward": "+10.0", "status": "Pending"}
-        ]
+        timeline = []
+        if db_records:
+            # Map recent historical interventions to a timeline view
+            recent_markers = db_records[-3:]
+            for r in recent_markers:
+                timeline.append({
+                    "time": r.timestamp.strftime("%I:%M %p"),
+                    "intervention": r.intervention_type,
+                    "expected_reward": f"+{round(r.reward_score, 1)}",
+                    "status": "Completed"
+                })
         
+        # Add future scheduled intervention based on best action
+        timeline.append({
+            "time": (datetime.utcnow() + timedelta(hours=4)).strftime("%I:%M %p"),
+            "intervention": best_action,
+            "expected_reward": f"+{round(float(best_q),1)}",
+            "status": "Scheduled"
+        })
+        
+        # Add a placeholder for evening
+        timeline.append({
+            "time": "09:00 PM",
+            "intervention": "Screen Dimming & Blue Light Filter",
+            "expected_reward": "+10.0",
+            "status": "Pending"
+        })
+        
+        # Engagement Analytics - Partially dynamic
+        adherence_rate = min(98.0, 75.0 + (len(db_records) * 0.5))
+        success_rate = min(95.0, 80.0 + (sum(r.reward_score for r in db_records[-10:]) / 10 * 5) if len(db_records) >= 10 else 88.0)
+
         return {
             "status": "active",
             "agent_epsilon": rl_agent_instance.epsilon,
@@ -92,11 +119,11 @@ async def get_real_rl_simulation(db: AsyncSession = Depends(get_db)):
             "discount_factor": rl_agent_instance.gamma,
             "reward_evolution": reward_evolution,
             "q_table_sample": q_table_snap,
-            "scheduling_timeline": timeline,
+            "scheduling_timeline": timeline[:4], # limit to 4 items
             "engagement_analytics": {
-                "adherence_rate": 84.5,
-                "intervention_success": 91.2,
-                "drop_off_risk": "Low"
+                "adherence_rate": round(adherence_rate, 1),
+                "intervention_success": round(success_rate, 1),
+                "drop_off_risk": "Low" if adherence_rate > 80 else "Moderate"
             }
         }
     except Exception as e:

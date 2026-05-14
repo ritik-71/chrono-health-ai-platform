@@ -59,15 +59,24 @@ async def shap_explain_default(db: AsyncSession = Depends(get_db)):
         )
         latest_record = history_result.scalars().first()
         
-        # Reconstruct representative inputs based on the latest health state
-        # (This avoids hardcoded defaults when real data exists)
-        inputs = {
-            "hrv": 45.0 if not latest_record else (55.0 if latest_record.stress_score < 40 else 35.0),
-            "sleep_duration": 7.0 if not latest_record else (latest_record.sleep_score / 10),
-            "sleep_quality": 0.8 if not latest_record else (latest_record.sleep_score / 100),
-            "cortisol_level": 15.0 if not latest_record else (20.0 if latest_record.stress_score > 60 else 12.0),
-            "light_exposure": 5000.0 if not latest_record else (3000.0 if latest_record.cii_score > 50 else 6000.0),
-        }
+        # Use actual stored raw features if available, fallback to defaults only if no records exist
+        if latest_record and latest_record.hrv is not None:
+            inputs = {
+                "hrv": latest_record.hrv,
+                "sleep_duration": latest_record.sleep_duration,
+                "sleep_quality": latest_record.sleep_quality,
+                "cortisol_level": latest_record.cortisol_level,
+                "light_exposure": latest_record.light_exposure,
+            }
+        else:
+            # Reconstruct representative inputs based on the latest health state (fallback for legacy records)
+            inputs = {
+                "hrv": 45.0 if not latest_record else (55.0 if latest_record.stress_score < 40 else 35.0),
+                "sleep_duration": 7.0 if not latest_record else (latest_record.sleep_score / 10),
+                "sleep_quality": 0.8 if not latest_record else (latest_record.sleep_score / 100),
+                "cortisol_level": 15.0 if not latest_record else (20.0 if latest_record.stress_score > 60 else 12.0),
+                "light_exposure": 5000.0 if not latest_record else (3000.0 if latest_record.cii_score > 50 else 6000.0),
+            }
         
         result = explainability_engine.explain_all(_predictor, inputs)
         result["inputs"] = inputs

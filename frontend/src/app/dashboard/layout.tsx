@@ -134,14 +134,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <div className="p-6 space-y-4">
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 relative overflow-hidden group cursor-pointer">
-            <div className="absolute inset-0 bg-indigo-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-            <h4 className="text-sm font-semibold text-indigo-400 mb-1 relative z-10">Clinical Pro</h4>
-            <p className="text-[10px] mb-4 relative z-10" style={{ color: 'var(--muted)' }}>Advanced ML inference active.</p>
-            <button className="w-full py-2 text-[11px] font-bold text-white rounded-lg bg-indigo-600 hover:bg-indigo-500 transition-all relative z-10 shadow-lg shadow-indigo-600/20">
-              Model Registry
-            </button>
-          </div>
+
 
           <button
             onClick={handleLogout}

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
-  ArrowLeft, Lightbulb, Network, Briefcase, Zap, ShieldCheck, 
-  Cpu, CheckCircle, XCircle 
+import {
+  ArrowLeft, Lightbulb, Network, Briefcase, Zap, ShieldCheck,
+  Cpu, CheckCircle, XCircle
 } from "lucide-react";
 import Link from "next/link";
 
@@ -28,13 +28,13 @@ export default function PatentPage() {
         {/* Title Section */}
         <header className="text-center space-y-6 relative">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-lg bg-purple-500/20 blur-[120px] pointer-events-none rounded-full" />
-          
+
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10">
             <span className="px-4 py-1.5 rounded-full bg-purple-500/10 text-purple-400 text-sm font-bold tracking-widest border border-purple-500/20">
               PATENT & IP SHOWCASE
             </span>
             <h1 className="text-4xl md:text-6xl font-extrabold text-white mt-6 leading-tight tracking-tight">
-              System and Method for <br/>
+              System and Method for <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400">
                 Dynamic Chronotherapy Scheduling
               </span>
@@ -46,7 +46,7 @@ export default function PatentPage() {
         </header>
 
         {/* Novelty Visualization */}
-        <motion.section 
+        <motion.section
           initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="grid md:grid-cols-2 gap-8 items-center"
         >
@@ -71,25 +71,25 @@ export default function PatentPage() {
             </ul>
           </div>
           <div className="p-8 rounded-3xl bg-gradient-to-tr from-purple-900/20 to-cyan-900/20 border border-purple-500/30 relative overflow-hidden h-80 flex items-center justify-center">
-             <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:24px_24px]" />
-             
-             {/* Animated Abstract Diagram */}
-             <div className="relative z-10 w-full max-w-sm">
-                <div className="flex justify-between items-center mb-12">
-                  <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 3 }} className="w-16 h-16 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
-                    <span className="text-xs font-bold text-cyan-400">CBT-I</span>
-                  </motion.div>
-                  <div className="flex-1 h-0.5 bg-gradient-to-r from-cyan-500/50 to-purple-500/50 relative">
-                    <motion.div animate={{ left: ['0%', '100%'] }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute -top-1 w-2 h-2 rounded-full bg-white shadow-[0_0_10px_white]" />
-                  </div>
-                  <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 3, delay: 1.5 }} className="w-16 h-16 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center">
-                    <span className="text-xs font-bold text-purple-400">CHRONO</span>
-                  </motion.div>
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:24px_24px]" />
+
+            {/* Animated Abstract Diagram */}
+            <div className="relative z-10 w-full max-w-sm">
+              <div className="flex justify-between items-center mb-12">
+                <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 3 }} className="w-16 h-16 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
+                  <span className="text-xs font-bold text-cyan-400">CBT-I</span>
+                </motion.div>
+                <div className="flex-1 h-0.5 bg-gradient-to-r from-cyan-500/50 to-purple-500/50 relative">
+                  <motion.div animate={{ left: ['0%', '100%'] }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="absolute -top-1 w-2 h-2 rounded-full bg-white shadow-[0_0_10px_white]" />
                 </div>
-                <div className="w-32 h-16 mx-auto rounded-full bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-md">
-                   <span className="font-bold text-white">CII Engine</span>
-                </div>
-             </div>
+                <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 3, delay: 1.5 }} className="w-16 h-16 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center">
+                  <span className="text-xs font-bold text-purple-400">CHRONO</span>
+                </motion.div>
+              </div>
+              <div className="w-32 h-16 mx-auto rounded-full bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-md">
+                <span className="font-bold text-white">CII Engine</span>
+              </div>
+            </div>
           </div>
         </motion.section>
 
@@ -125,7 +125,7 @@ export default function PatentPage() {
         </motion.section>
 
         {/* Commercialization Opportunities */}
-        <motion.section 
+        <motion.section
           initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="grid md:grid-cols-3 gap-6"
         >
@@ -135,7 +135,7 @@ export default function PatentPage() {
             </h2>
             <p className="text-gray-400 mb-8">B2B and B2C pathways for deploying the ChronoHealth IP.</p>
           </div>
-          
+
           {[
             { title: "Clinical SaaS Licensing", desc: "API access for psychiatrists and sleep clinics to embed the CII mathematical engine into their patient portals." },
             { title: "Wearable Integration", desc: "Licensing the edge-inference Q-learning module directly to Apple Watch or Garmin OS for real-time chronotherapy nudges." },

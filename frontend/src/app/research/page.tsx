@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
-  ArrowLeft, BookOpen, FileText, CheckCircle, 
+import {
+  ArrowLeft, BookOpen, FileText, CheckCircle,
   BarChart3, Brain, Activity, Clock
 } from "lucide-react";
 import Link from "next/link";
@@ -41,7 +41,7 @@ export default function ResearchPage() {
         </header>
 
         {/* Abstract */}
-        <motion.section 
+        <motion.section
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="p-8 md:p-12 rounded-3xl bg-white/5 border border-white/10 relative overflow-hidden"
         >
@@ -50,7 +50,7 @@ export default function ResearchPage() {
             <FileText className="w-6 h-6 text-cyan-400" /> I. Abstract
           </h2>
           <p className="leading-relaxed text-gray-300 text-lg">
-            Adjustment Disorder (AjD) and Circadian Rhythm Sleep-Wake Disorders (CRSWD) present a highly prevalent, bidirectional co-morbidity among university-enrolled young adults. Traditional therapeutic approaches treat these conditions in isolation, ignoring the compounding physiological feedback loop between acute psychological stress and circadian phase shifts. We propose a novel digital therapeutics (DTx) platform integrating multi-modal wearable data ingestion, XGBoost-driven stress prediction, and deep Q-learning reinforcement agents to dynamically schedule Cognitive Behavioral Therapy for Insomnia (CBT-I) and Chronotherapy. 
+            Adjustment Disorder (AjD) and Circadian Rhythm Sleep-Wake Disorders (CRSWD) present a highly prevalent, bidirectional co-morbidity among university-enrolled young adults. Traditional therapeutic approaches treat these conditions in isolation, ignoring the compounding physiological feedback loop between acute psychological stress and circadian phase shifts. We propose a novel digital therapeutics (DTx) platform integrating multi-modal wearable data ingestion, XGBoost-driven stress prediction, and deep Q-learning reinforcement agents to dynamically schedule Cognitive Behavioral Therapy for Insomnia (CBT-I) and Chronotherapy.
           </p>
         </motion.section>
 
@@ -61,8 +61,8 @@ export default function ResearchPage() {
             { icon: Clock, title: "Phase Shift Detection", stat: "1.2h", desc: "Average delay identification margin of error." },
             { icon: Activity, title: "Q-Learning Efficacy", stat: "+42%", desc: "Improvement in optimal intervention scheduling." }
           ].map((card, i) => (
-            <motion.div 
-              key={i} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + (i*0.1) }}
+            <motion.div
+              key={i} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + (i * 0.1) }}
               className="p-8 rounded-3xl bg-gradient-to-b from-white/5 to-transparent border border-white/10 hover:border-cyan-500/30 transition-colors"
             >
               <card.icon className="w-8 h-8 text-cyan-400 mb-4" />
@@ -80,7 +80,7 @@ export default function ResearchPage() {
           </h2>
           <div className="space-y-6 text-gray-300 leading-relaxed">
             <p>
-              Recent advancements in computational psychiatry emphasize the limits of isolated CBT methodologies. Research by <span className="text-cyan-400">Smith et al. (2024)</span> demonstrated that untreated delayed sleep phase significantly blunts the efficacy of standard anxiety interventions. 
+              Recent advancements in computational psychiatry emphasize the limits of isolated CBT methodologies. Research by <span className="text-cyan-400">Smith et al. (2024)</span> demonstrated that untreated delayed sleep phase significantly blunts the efficacy of standard anxiety interventions.
             </p>
             <p>
               Simultaneously, the introduction of the <strong>Circadian Interaction Index (CII)</strong> marks a paradigm shift. Our model expands upon chronobiological oscillators by introducing a stress-weighted penalty function, confirming that psychological hyperarousal mathematically acts as a zeitgeber-resistant phase delay mechanism.

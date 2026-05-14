@@ -167,7 +167,7 @@ export default function CSVAnalyticsPage() {
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                       <XAxis type="number" tick={{ fill: "var(--chart-tick)", fontSize: 11 }} />
                       <YAxis type="category" dataKey="name" tick={{ fill: "var(--chart-tick)", fontSize: 11 }} width={80} />
-                      <Tooltip  />
+                      <Tooltip />
                       <Bar dataKey="missing" radius={[0, 4, 4, 0]}>
                         {colData.map((entry: any, index: number) => <Cell key={index} fill={entry.fill} />)}
                       </Bar>

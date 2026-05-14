@@ -15,6 +15,13 @@ class PredictionHistory(Base):
     fatigue_score = Column(Float, nullable=False)
     mood_stability = Column(Float, nullable=True, default=75.0)
     
+    # Raw features for Explainability
+    hrv = Column(Float, nullable=True)
+    sleep_duration = Column(Float, nullable=True)
+    sleep_quality = Column(Float, nullable=True)
+    cortisol_level = Column(Float, nullable=True)
+    light_exposure = Column(Float, nullable=True)
+    
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationship

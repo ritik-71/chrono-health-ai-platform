@@ -44,9 +44,21 @@ async def lifespan(app: FastAPI):
                 if not result.scalar():
                     logger.info("Migrating database: Adding mood_stability column to prediction_history...")
                     await conn.execute(text("ALTER TABLE prediction_history ADD COLUMN mood_stability FLOAT DEFAULT 75.0;"))
-                    logger.info("Migration successful.")
+                
+                # Check for new raw feature columns
+                res_hrv = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='prediction_history' AND column_name='hrv';"))
+                if not res_hrv.scalar():
+                    logger.info("Migrating database: Adding raw feature columns for explainability...")
+                    await conn.execute(text("ALTER TABLE prediction_history ADD COLUMN hrv FLOAT;"))
+                    await conn.execute(text("ALTER TABLE prediction_history ADD COLUMN sleep_duration FLOAT;"))
+                    await conn.execute(text("ALTER TABLE prediction_history ADD COLUMN sleep_quality FLOAT;"))
+                    await conn.execute(text("ALTER TABLE prediction_history ADD COLUMN cortisol_level FLOAT;"))
+                    await conn.execute(text("ALTER TABLE prediction_history ADD COLUMN light_exposure FLOAT;"))
+                    logger.info("Explainability columns added.")
+                
+                logger.info("Migration successful.")
             except Exception as me:
-                logger.warning(f"Column migration check/apply failed (might be SQLite or already exists): {me}")
+                logger.warning(f"Column migration check/apply failed: {me}")
                 
             logger.info("Primary database synchronized successfully.")
     except Exception as e:

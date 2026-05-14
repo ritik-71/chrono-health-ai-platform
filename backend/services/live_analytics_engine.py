@@ -6,6 +6,7 @@ Synchronizes prediction history, CII trends, and phenotype distributions.
 
 import pandas as pd
 import numpy as np
+import random
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,11 +24,17 @@ class LiveAnalyticsEngine:
         Takes an uploaded dataframe and generates longitudinal analytics records.
         Ensures the dashboard reflects the newly uploaded data.
         """
+        # 0. Clear old history to make the new dataset the ACTIVE source
+        from sqlalchemy import delete
+        await db.execute(delete(PredictionHistory).where(PredictionHistory.user_id == user_id))
+        await db.execute(delete(CIIHistory).where(CIIHistory.user_id == user_id))
+        await db.execute(delete(RLIntervention).where(RLIntervention.user_id == user_id))
+        await db.commit()
+
         # 1. Data Validation & Schema Normalization
         df = self._normalize_schema(df)
         
         # 2. Extract Features & Run Batch Inference
-        # We simulate a longitudinal timeline based on the rows if no timestamp is present
         records_to_add = []
         cii_records = []
         
@@ -39,11 +46,11 @@ class LiveAnalyticsEngine:
         for i, (_, row) in enumerate(process_df.iterrows()):
             # Map columns to predictor features
             raw_input = {
-                "hrv": row.get("hrv", 55.0),
-                "sleep_duration": row.get("sleep_duration", row.get("sleep", 7.0)),
-                "sleep_quality": row.get("sleep_quality", 0.75),
-                "cortisol_level": row.get("cortisol_level", 15.0),
-                "light_exposure": row.get("light_exposure", 5000.0)
+                "hrv": float(row.get("hrv", 55.0)),
+                "sleep_duration": float(row.get("sleep_duration", 7.0)),
+                "sleep_quality": float(row.get("sleep_quality", 0.75)),
+                "cortisol_level": float(row.get("cortisol_level", 15.0)),
+                "light_exposure": float(row.get("light_exposure", 5000.0))
             }
             
             # Run inference
@@ -56,7 +63,7 @@ class LiveAnalyticsEngine:
             stress_map = {"Low": 25.0, "Moderate": 55.0, "High": 85.0}
             stress_score = stress_map.get(pred["stress_risk"], 50.0)
             
-            # 3. Create Prediction History Record
+            # 3. Create Prediction History Record (including raw features)
             history_item = PredictionHistory(
                 user_id=user_id,
                 stress_score=stress_score,
@@ -64,6 +71,11 @@ class LiveAnalyticsEngine:
                 cii_score=pred["cii_prediction"],
                 fatigue_score=50.0 if pred["mental_fatigue"] == "Moderate" else (80.0 if pred["mental_fatigue"] == "High" else 20.0),
                 mood_stability=pred.get("mood_stability", 75.0),
+                hrv=raw_input["hrv"],
+                sleep_duration=raw_input["sleep_duration"],
+                sleep_quality=raw_input["sleep_quality"],
+                cortisol_level=raw_input["cortisol_level"],
+                light_exposure=raw_input["light_exposure"],
                 timestamp=ts
             )
             records_to_add.append(history_item)
@@ -76,24 +88,22 @@ class LiveAnalyticsEngine:
                 timestamp=ts
             )
             cii_records.append(cii_item)
-            
-            # Phenotype classification is already integrated into PredictionHistory logic via scores
-            # but we could add more specific phenotype tracking if needed.
 
         # 5. Batch Save to Database
         db.add_all(records_to_add)
         db.add_all(cii_records)
         
-        # 6. (Optional) Generate a few RL interventions for historical context
+        # 6. Generate a few RL interventions for historical context based on new data
         if len(records_to_add) > 5:
-            rl_item = RLIntervention(
-                user_id=user_id,
-                intervention_type="Bright Light Therapy" if records_to_add[-1].cii_score > 60 else "CBT-I Session",
-                recommendation="Generated from live data upload analysis.",
-                reward_score=0.85,
-                timestamp=datetime.utcnow()
-            )
-            db.add(rl_item)
+            for j in range(3):
+                rl_item = RLIntervention(
+                    user_id=user_id,
+                    intervention_type="Bright Light Therapy" if records_to_add[-1-j].cii_score > 60 else "CBT-I Session",
+                    recommendation="Generated from live data upload analysis.",
+                    reward_score=0.7 + (random.random() * 0.2 if 'random' in globals() else 0.15),
+                    timestamp=datetime.utcnow() - timedelta(hours=j*2)
+                )
+                db.add(rl_item)
 
         await db.commit()
         return len(records_to_add)

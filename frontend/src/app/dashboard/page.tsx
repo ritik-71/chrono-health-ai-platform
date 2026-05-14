@@ -65,7 +65,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const dashboardRef = useRef<HTMLDivElement>(null);
-  
+
   // API States
   const [predictData, setPredictData] = useState<any>(null);
   const [ciiData, setCiiData] = useState<any>(null);
@@ -108,7 +108,7 @@ export default function Dashboard() {
       if (resPredict.data) setPredictData(resPredict.data);
       if (resCii.data) setCiiData(resCii.data);
       if (resRl.data) setRlData(resRl.data);
-      
+
       if (resHistory.data && Array.isArray(resHistory.data)) {
         const formattedHistory = resHistory.data.map((d: any) => ({
           day: d.timestamp ? new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
@@ -136,13 +136,13 @@ export default function Dashboard() {
       <div className="p-4 sm:p-8 max-w-7xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
           <div>
-            <motion.h1 
+            <motion.h1
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
               className="text-3xl sm:text-4xl font-black tracking-tight mb-2"
             >
               AI Healthcare Intelligence
             </motion.h1>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
               style={{ color: 'var(--muted)' }}
             >
@@ -196,7 +196,7 @@ export default function Dashboard() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             className="lg:col-span-2 glass-card rounded-3xl p-8"
           >
@@ -214,12 +214,12 @@ export default function Dashboard() {
                   <AreaChart data={activeChartData}>
                     <defs>
                       <linearGradient id="colorStress" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorSleep" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
@@ -238,7 +238,7 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
             className="glass-card rounded-3xl p-8 flex flex-col"
           >
@@ -318,7 +318,7 @@ export default function Dashboard() {
                   <span className="text-xl font-black text-indigo-400">{predictData?.prediction_metadata?.confidence_score || 89.2}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--surface)' }}>
-                  <motion.div 
+                  <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${predictData?.prediction_metadata?.confidence_score || 89.2}%` }}
                     className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full"
