@@ -37,13 +37,21 @@ export default function ExplainabilityPage() {
   const fetchData = useCallback(async (params?: any) => {
     setLoading(true);
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/explainability/analyze`, params || inputs);
+      const url = `${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/explainability/analyze`;
+      const res = params 
+        ? await axios.post(url, params)
+        : await axios.get(url);
+      
       setData(res.data);
+      // Sync inputs with what was actually analyzed if it was a default GET
+      if (!params && res.data.inputs) {
+        setInputs(res.data.inputs);
+      }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
-  }, [inputs]);
+  }, []);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleInputChange = (key: string, val: number) => {
     setInputs(prev => ({ ...prev, [key]: val }));

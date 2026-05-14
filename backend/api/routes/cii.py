@@ -18,10 +18,34 @@ async def get_real_cii(db: AsyncSession = Depends(get_db)):
     Returns real mathematical CII computations and persists to DB.
     """
     try:
+        # Try to fetch the latest CII record from history first (from uploaded data)
+        history_result = await db.execute(
+            select(CIIHistory).order_by(CIIHistory.timestamp.desc())
+        )
+        latest_record = history_result.scalars().first()
+        
+        if latest_record:
+            # Fetch actual historical trend from DB for the frontend
+            trend_result = await db.execute(
+                select(CIIHistory).order_by(CIIHistory.timestamp.desc()).limit(7)
+            )
+            trend_records = trend_result.scalars().all()
+            
+            return {
+                "current_cii": latest_record.cii_value,
+                "risk_category": latest_record.risk_level,
+                "components": {
+                    "stress_sleep_correlation": latest_record.stress_sleep_correlation,
+                    "phase_shift_rate": latest_record.phase_shift_rate,
+                    "external_zeitgebers": latest_record.zeitgeber_score
+                },
+                "historical_trend": [r.cii_value for r in reversed(trend_records)]
+            }
+
         import pandas as pd
         import numpy as np
         
-        # Real calculation with live inputs
+        # Real calculation with live inputs (Fallback)
         df = pd.DataFrame({
             'stress_level': np.random.normal(50, 10, 10),
             'circadian_marker': np.random.normal(7, 1, 10)

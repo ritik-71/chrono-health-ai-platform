@@ -17,24 +17,10 @@ import {
   BarChart, Bar
 } from "recharts";
 
-// Mock Time-series data for the charts
-const weeklyData = [
-  { day: "Mon", stress: 65, sleep: 6.2, hrv: 45, mood: 60 },
-  { day: "Tue", stress: 55, sleep: 7.1, hrv: 52, mood: 65 },
-  { day: "Wed", stress: 80, sleep: 4.5, hrv: 35, mood: 40 },
-  { day: "Thu", stress: 45, sleep: 8.0, hrv: 65, mood: 80 },
-  { day: "Fri", stress: 50, sleep: 7.5, hrv: 60, mood: 75 },
-  { day: "Sat", stress: 30, sleep: 9.0, hrv: 80, mood: 90 },
-  { day: "Sun", stress: 35, sleep: 8.5, hrv: 75, mood: 85 },
-];
+// Default series names for charts
+const CHART_METRICS = ["Stress", "Sleep", "HRV", "Mood"];
 
-const radarData = [
-  { subject: 'Stress Resistance', A: 80, fullMark: 100 },
-  { subject: 'Sleep Efficiency', A: 65, fullMark: 100 },
-  { subject: 'Circadian Alignment', A: 90, fullMark: 100 },
-  { subject: 'HRV Recovery', A: 50, fullMark: 100 },
-  { subject: 'Mood Stability', A: 70, fullMark: 100 },
-];
+
 
 // Component for Animated Counter - Memoized
 const Counter = React.memo(({ value, prefix = "", suffix = "", decimals = 0 }: { value: number | string, prefix?: string, suffix?: string, decimals?: number }) => {
@@ -89,8 +75,19 @@ export default function Dashboard() {
 
   // Memoize active chart data to prevent recalculation on every render
   const activeChartData = React.useMemo(() => {
-    return historyData.length > 5 ? historyData : weeklyData;
+    return historyData.length > 0 ? historyData : [];
   }, [historyData]);
+
+  const radarData = React.useMemo(() => {
+    if (!predictData || !ciiData) return [];
+    return [
+      { subject: 'Stress Res.', A: 100 - (predictData.stress_risk === "High" ? 85 : predictData.stress_risk === "Moderate" ? 50 : 20), fullMark: 100 },
+      { subject: 'Sleep Eff.', A: (1 - predictData.sleep_disorder_probability) * 100, fullMark: 100 },
+      { subject: 'Circadian', A: predictData.circadian_stability, fullMark: 100 },
+      { subject: 'CII Align', A: 100 - ciiData.current_cii, fullMark: 100 },
+      { subject: 'Mood Stab.', A: 75, fullMark: 100 },
+    ];
+  }, [predictData, ciiData]);
 
   useEffect(() => {
     setMounted(true);

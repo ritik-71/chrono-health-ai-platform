@@ -195,6 +195,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <AnimatePresence>
                 {showNotifications && (
                   <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} transition={{ duration: 0.2 }}
+                    onClick={(e) => e.stopPropagation()}
                     className="absolute right-0 mt-2 w-80 rounded-2xl shadow-xl border overflow-hidden z-50"
                     style={{ background: 'var(--surface)', borderColor: 'var(--card-border)' }}>
                     <div className="p-4 border-b" style={{ borderColor: 'var(--card-border)' }}>
@@ -226,6 +227,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <AnimatePresence>
                 {showProfile && (
                   <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} transition={{ duration: 0.2 }}
+                    onClick={(e) => e.stopPropagation()}
                     className="absolute right-0 mt-2 w-56 rounded-2xl shadow-xl border overflow-hidden z-50 py-2"
                     style={{ background: 'var(--surface)', borderColor: 'var(--card-border)' }}>
                     <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--card-border)' }}>

@@ -3,7 +3,9 @@ SHAP Explainability API — extends the prediction system with
 interpretable AI explanations without altering existing prediction routes.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from core.database import get_db
 from pydantic import BaseModel
 from typing import Optional
 
@@ -43,19 +45,32 @@ async def shap_explain(data: ExplainRequest):
 
 
 @router.get("/explainability/analyze")
-async def shap_explain_default():
+async def shap_explain_default(db: AsyncSession = Depends(get_db)):
     """
-    GET version using default patient values — for dashboard auto-load.
+    GET version using the latest processed patient data from history — for dashboard auto-load.
     """
     try:
-        defaults = {
-            "hrv": 45.5,
-            "sleep_duration": 6.2,
-            "sleep_quality": 0.7,
-            "cortisol_level": 15.0,
-            "light_exposure": 5000.0,
+        from sqlalchemy.future import select
+        from models.prediction import PredictionHistory
+        
+        # Try to find the latest prediction record to explain
+        history_result = await db.execute(
+            select(PredictionHistory).order_by(PredictionHistory.timestamp.desc())
+        )
+        latest_record = history_result.scalars().first()
+        
+        # Reconstruct representative inputs based on the latest health state
+        # (This avoids hardcoded defaults when real data exists)
+        inputs = {
+            "hrv": 45.0 if not latest_record else (55.0 if latest_record.stress_score < 40 else 35.0),
+            "sleep_duration": 7.0 if not latest_record else (latest_record.sleep_score / 10),
+            "sleep_quality": 0.8 if not latest_record else (latest_record.sleep_score / 100),
+            "cortisol_level": 15.0 if not latest_record else (20.0 if latest_record.stress_score > 60 else 12.0),
+            "light_exposure": 5000.0 if not latest_record else (3000.0 if latest_record.cii_score > 50 else 6000.0),
         }
-        result = explainability_engine.explain_all(_predictor, defaults)
+        
+        result = explainability_engine.explain_all(_predictor, inputs)
+        result["inputs"] = inputs
         return result
     except Exception as e:
         import traceback
