@@ -106,24 +106,25 @@ export default function Dashboard() {
         api.get("/api/prediction/history").catch(() => ({ data: [] }))
       ]);
 
-      setPredictData(resPredict.data);
-      setCiiData(resCii.data);
-      setRlData(resRl.data);
+      if (resPredict.data) setPredictData(resPredict.data);
+      if (resCii.data) setCiiData(resCii.data);
+      if (resRl.data) setRlData(resRl.data);
       
-      if (resHistory.data && resHistory.data.length > 0) {
+      if (resHistory.data && Array.isArray(resHistory.data)) {
         const formattedHistory = resHistory.data.map((d: any) => ({
-          day: new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          stress: d.stress,
-          sleep: d.sleep / 10,
-          hrv: d.stress,
-          mood: d.cii
+          day: d.timestamp ? new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
+          stress: d.stress ?? 50,
+          sleep: (d.sleep ?? 70) / 10,
+          hrv: d.stress ?? 50,
+          mood: d.mood ?? 75
         }));
         setHistoryData(formattedHistory);
       }
     } catch (error) {
-      console.error("Error fetching dashboard data", error);
+      console.error("Critical Dashboard Fetch Error:", error);
     } finally {
-      setTimeout(() => setIsLoading(false), 400); // Reduced delay for better performance feel
+      // Ensure loading is cleared
+      setIsLoading(false);
     }
   }, [historyData.length]);
 

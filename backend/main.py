@@ -30,7 +30,24 @@ async def lifespan(app: FastAPI):
     # Automatic database initialization with robust fallback
     try:
         async with engine.begin() as conn:
+            # Sync metadata
             await conn.run_sync(Base.metadata.create_all)
+            
+            # Manual Migration Check: Ensure mood_stability exists (Base.metadata.create_all doesn't add columns to existing tables)
+            from sqlalchemy import text
+            try:
+                # Check column existence using information_schema
+                result = await conn.execute(text("""
+                    SELECT column_name FROM information_schema.columns 
+                    WHERE table_name='prediction_history' AND column_name='mood_stability';
+                """))
+                if not result.scalar():
+                    logger.info("Migrating database: Adding mood_stability column to prediction_history...")
+                    await conn.execute(text("ALTER TABLE prediction_history ADD COLUMN mood_stability FLOAT DEFAULT 75.0;"))
+                    logger.info("Migration successful.")
+            except Exception as me:
+                logger.warning(f"Column migration check/apply failed (might be SQLite or already exists): {me}")
+                
             logger.info("Primary database synchronized successfully.")
     except Exception as e:
         logger.warning(f"Primary Database sync failed: {e}. Attempting fallback to local SQLite.")
@@ -39,6 +56,10 @@ async def lifespan(app: FastAPI):
             fallback_engine = create_async_engine("sqlite+aiosqlite:///./chronohealth.db")
             async with fallback_engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
+                # Try adding column to SQLite too
+                try:
+                    await conn.execute(text("ALTER TABLE prediction_history ADD COLUMN mood_stability FLOAT DEFAULT 75.0;"))
+                except: pass 
             logger.info("Fallback local database synchronized successfully.")
             await fallback_engine.dispose()
         except Exception as fe:

@@ -72,6 +72,7 @@ async def _query_prediction_history(db: AsyncSession) -> List[dict]:
             "sleep": r.sleep_score,
             "cii": r.cii_score,
             "fatigue": r.fatigue_score,
+            "mood": r.mood_stability,
             "ts": str(r.timestamp),
         }
         for r in rows
@@ -139,6 +140,7 @@ def _summarise_predictions(records: List[dict]) -> str:
     sleeps = [r["sleep"] for r in records]
     fatigues = [r["fatigue"] for r in records]
     ciis = [r["cii"] for r in records]
+    moods = [r.get("mood", 75) for r in records]
     n = len(records)
     return (
         f"Prediction history contains {n} records. "
@@ -146,7 +148,8 @@ def _summarise_predictions(records: List[dict]) -> str:
         f"Average sleep score: {sum(sleeps)/n:.1f} (trend: {_trend_label(sleeps)}). "
         f"Average fatigue score: {sum(fatigues)/n:.1f} (trend: {_trend_label(fatigues)}). "
         f"Average CII score: {sum(ciis)/n:.1f} (trend: {_trend_label(ciis)}). "
-        f"Latest stress={stresses[0]:.1f}, sleep={sleeps[0]:.1f}, fatigue={fatigues[0]:.1f}, cii={ciis[0]:.1f}."
+        f"Average mood stability: {sum(moods)/n:.1f} (trend: {_trend_label(moods)}). "
+        f"Latest stress={stresses[0]:.1f}, sleep={sleeps[0]:.1f}, fatigue={fatigues[0]:.1f}, mood={moods[0]:.1f}."
     )
 
 

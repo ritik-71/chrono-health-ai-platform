@@ -47,7 +47,11 @@ export default function ExplainabilityPage() {
       if (!params && res.data.inputs) {
         setInputs(res.data.inputs);
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error("Explainability fetch error:", e);
+      // Ensure we don't stay in infinite loading
+      if (!data) setData({ error: true }); 
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -67,12 +71,15 @@ export default function ExplainabilityPage() {
     );
   }
 
-  if (!data) {
+  if (!data || data.error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4" style={{ color: 'var(--muted)' }}>
+      <div className="flex flex-col items-center justify-center h-full gap-4 pb-20" style={{ color: 'var(--muted)' }}>
         <AlertTriangle className="w-10 h-10 text-amber-400" />
-        <p>Explainability engine unavailable.</p>
-        <button onClick={() => fetchData()} className="px-4 py-2 rounded-xl text-sm hover:opacity-80" style={{ background: 'var(--surface)', border: '1px solid var(--card-border)' }}>Retry</button>
+        <p className="text-lg font-bold">Explainability engine unavailable.</p>
+        <p className="text-sm max-w-md text-center">The SHAP analysis engine is currently synchronizing with the latest clinical data. Please retry in a few moments.</p>
+        <button onClick={() => fetchData()} className="mt-4 px-6 py-3 rounded-xl text-sm font-bold bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-all border border-amber-500/30">
+          Retry Analysis
+        </button>
       </div>
     );
   }

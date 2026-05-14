@@ -63,6 +63,7 @@ class LiveAnalyticsEngine:
                 sleep_score=pred["sleep_disorder_probability"] * 100,
                 cii_score=pred["cii_prediction"],
                 fatigue_score=50.0 if pred["mental_fatigue"] == "Moderate" else (80.0 if pred["mental_fatigue"] == "High" else 20.0),
+                mood_stability=pred.get("mood_stability", 75.0),
                 timestamp=ts
             )
             records_to_add.append(history_item)

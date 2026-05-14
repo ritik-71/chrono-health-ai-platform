@@ -164,6 +164,7 @@ class ClinicalPredictor:
             "circadian_stability": 75.0,
             "mental_fatigue": "Moderate",
             "cii_prediction": 70.0,
+            "mood_stability": 75.0,
             "phenotype_classification": "Balanced",
             "chronotherapy_timing": "08:00 AM Standard Light Therapy",
             "personalized_cbt_suggestions": ["Consult clinician for full assessment."],
