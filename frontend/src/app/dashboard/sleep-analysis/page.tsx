@@ -25,8 +25,8 @@ export default function SleepAnalysisPage() {
     setLoading(true);
     try {
       const [pred, hist] = await Promise.all([
-        axios.get("http://localhost:8000/api/predict"),
-        axios.get("http://localhost:8000/api/prediction/history"),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/predict`),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/prediction/history`),
       ]);
       setPredData(pred.data);
       setHistory(hist.data.slice(-14));

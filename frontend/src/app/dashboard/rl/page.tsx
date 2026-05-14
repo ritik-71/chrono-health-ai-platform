@@ -37,8 +37,8 @@ export default function RLSimulationPage() {
   const fetchData = useCallback(async () => {
     try {
       const [simRes, anaRes] = await Promise.all([
-        axios.get("http://localhost:8000/api/rl/simulation"),
-        axios.get("http://localhost:8000/api/rl/analytics"),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/rl/simulation`),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/rl/analytics`),
       ]);
       setSim(simRes.data);
       setAnalytics(anaRes.data);

@@ -35,7 +35,7 @@ export default function CorrelationsPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:8000/api/analytics/correlations");
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/analytics/correlations`);
       setData(res.data);
       const pairKeys = Object.keys(res.data.pairs || {});
       if (pairKeys.length > 0) setActivePair(pairKeys[0]);

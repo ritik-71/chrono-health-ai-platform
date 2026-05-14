@@ -64,7 +64,7 @@ export default function PatientJourneyPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:8000/api/timeline/patient-journey");
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/timeline/patient-journey`);
       setData(res.data);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
