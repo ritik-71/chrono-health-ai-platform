@@ -2,6 +2,10 @@ import sys
 import os
 import numpy as np
 import joblib
+import warnings
+
+# Silence harmless sklearn feature name warnings in production
+warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 
 # Add the project root to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
