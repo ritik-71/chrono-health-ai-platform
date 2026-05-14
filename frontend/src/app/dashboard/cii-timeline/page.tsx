@@ -92,7 +92,7 @@ export default function CIITimelinePage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/analytics/cii-timeline`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/analytics/cii-timeline`);
       setData(res.data);
     } catch (e: any) {
       console.error(e);

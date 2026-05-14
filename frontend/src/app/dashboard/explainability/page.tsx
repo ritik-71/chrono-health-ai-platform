@@ -37,7 +37,7 @@ export default function ExplainabilityPage() {
   const fetchData = useCallback(async (params?: any) => {
     setLoading(true);
     try {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/explainability/analyze`, params || inputs);
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/explainability/analyze`, params || inputs);
       setData(res.data);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }

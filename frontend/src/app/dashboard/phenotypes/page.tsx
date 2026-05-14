@@ -41,7 +41,7 @@ export default function PhenotypesPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/phenotypes/analyze`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/phenotypes/analyze`);
       setData(res.data);
       if (res.data.dominant) setSelectedRadar(res.data.dominant);
     } catch (e) { console.error(e); }

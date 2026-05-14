@@ -24,7 +24,7 @@ export default function CSVAnalyticsPage() {
   const fetchHistory = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000"}/api/upload/history`);
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/upload/history`);
       setHistory(res.data);
       if (res.data.length > 0) setSelected(res.data[0]);
     } catch (e) { console.error(e); }
