@@ -122,8 +122,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link key={index} href={item.href}>
                   <button
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${isActive
-                        ? "bg-gradient-to-r from-cyan-500/10 to-blue-600/10 text-cyan-500 border border-cyan-500/20 font-semibold"
-                        : `hover:bg-[var(--surface-hover)]`
+                      ? "bg-gradient-to-r from-cyan-500/10 to-blue-600/10 text-cyan-500 border border-cyan-500/20 font-semibold"
+                      : `hover:bg-[var(--surface-hover)]`
                       }`}
                     style={!isActive ? { color: 'var(--muted)' } : undefined}
                   >
@@ -216,7 +216,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
               </AnimatePresence>
             </div>
-            
+
             <div className="relative">
               <div onClick={(e) => { e.stopPropagation(); setShowProfile(!showProfile); setShowNotifications(false); }} className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 p-[2px] cursor-pointer shadow-lg hover:scale-110 transition-transform active:scale-95">
                 <div className="w-full h-full rounded-full flex items-center justify-center" style={{ background: 'var(--background)' }}>
