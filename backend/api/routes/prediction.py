@@ -50,6 +50,7 @@ async def get_live_predictions(db: AsyncSession = Depends(get_db)):
                 "sleep_disorder_probability": 1 - (latest_record.sleep_score / 100),
                 "circadian_stability": latest_record.cii_score,
                 "mental_fatigue": fatigue_rev.get(latest_record.fatigue_score, "Moderate"),
+                "mood_stability": latest_record.mood_stability or 75.0,
                 "cii_prediction": latest_record.cii_score,
                 "chronotherapy_timing": "22:30 - 23:30 (Phase Lag)",
                 "personalized_cbt_suggestions": [
@@ -100,7 +101,8 @@ async def get_live_predictions(db: AsyncSession = Depends(get_db)):
             stress_score=stress_map.get(results["stress_risk"], 50.0),
             sleep_score=(1 - results["sleep_disorder_probability"]) * 100,
             cii_score=results["cii_prediction"],
-            fatigue_score=fatigue_map.get(results["mental_fatigue"], 40.0)
+            fatigue_score=fatigue_map.get(results["mental_fatigue"], 40.0),
+            mood_stability=results.get("mood_stability", 75.0)
         )
         
         db.add(new_record)
@@ -131,6 +133,7 @@ async def get_prediction_history(limit: int = 50, offset: int = 0, db: AsyncSess
                 "sleep": r.sleep_score,
                 "cii": r.cii_score,
                 "fatigue": r.fatigue_score,
+                "mood": r.mood_stability or 75.0,
                 "timestamp": r.timestamp
             }
             for r in records
@@ -158,7 +161,8 @@ async def predict_patient(data: PatientPayload, db: AsyncSession = Depends(get_d
             stress_score=stress_map.get(results["stress_risk"], 50.0),
             sleep_score=(1 - results["sleep_disorder_probability"]) * 100,
             cii_score=results["cii_prediction"],
-            fatigue_score=fatigue_map.get(results["mental_fatigue"], 40.0)
+            fatigue_score=fatigue_map.get(results["mental_fatigue"], 40.0),
+            mood_stability=results.get("mood_stability", 75.0)
         )
         db.add(new_record)
         await db.commit()

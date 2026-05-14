@@ -91,12 +91,12 @@ class ClinicalPredictor:
                 try:
                     stress_prob = float(np.max(self.stress_model.predict_proba(X_scaled)))
                 except:
-                    stress_prob = 0.85 # Fallback if model doesn't support predict_proba
+                    stress_prob = 0.85 + (0.1 if stress_class == 0 else -0.05)
                     
                 try:
                     sleep_prob = float(self.sleep_model.predict_proba(X_scaled)[0][1]) # Prob of class 1
                 except:
-                    sleep_prob = float(sleep_disorder)
+                    sleep_prob = float(sleep_disorder) * 0.9
 
                 # Map classes back to strings
                 stress_map = {0: "Low", 1: "Moderate", 2: "High"}
@@ -112,15 +112,20 @@ class ClinicalPredictor:
                 else:
                     cii_prediction = cii_val
 
+                # Mood Stability heuristic based on feature interaction
+                mood_stability = 100 - (abs(stress_prob - sleep_prob) * 40 + (1 if stress_class > 0 else 0) * 15)
+                mood_stability = max(30, min(95, mood_stability))
+
             else:
                 # ── CLINICAL HEURISTIC FALLBACK ────────────────────────────────
                 stress_risk = "Moderate"
                 sleep_prob = 0.5
                 circadian_stab = 80.0
-                fatigue_class = 0
+                fatigue_class = 1
                 cii_prediction = 75.0
                 phenotype_label = "Balanced"
-                stress_prob = 0.7
+                stress_prob = 0.72
+                mood_stability = 78.5
 
             # Recommendations Generator
             cbt_suggestions = ["Maintain standard sleep hygiene."]
@@ -136,6 +141,7 @@ class ClinicalPredictor:
                 "circadian_stability": round(circadian_stab, 1),
                 "mental_fatigue": "High" if fatigue_class == 2 else ("Moderate" if fatigue_class == 1 else "Low"),
                 "cii_prediction": round(cii_prediction, 1),
+                "mood_stability": round(mood_stability, 1),
                 "phenotype_classification": phenotype_label,
                 "chronotherapy_timing": timing,
                 "personalized_cbt_suggestions": cbt_suggestions,

@@ -13,6 +13,7 @@ class PredictionHistory(Base):
     sleep_score = Column(Float, nullable=False)
     cii_score = Column(Float, nullable=False)
     fatigue_score = Column(Float, nullable=False)
+    mood_stability = Column(Float, nullable=True, default=75.0)
     
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 

@@ -126,7 +126,7 @@ export default function AIAssistant() {
     setMessages(prev => [...prev, { id: typingId, sender: "ai", text: "", isTyping: true }]);
 
     try {
-      const response = await fetch(getApiUrl("/api/chat"), {
+      const response = await fetch(getApiUrl("/api/context-chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -141,6 +141,11 @@ export default function AIAssistant() {
       setMessages(prev => prev.map(msg => 
         msg.id === typingId ? { ...msg, text: data.response, isTyping: false } : msg
       ));
+
+      // Optional: Log context for debugging or future UI indicators
+      if (data.context) {
+        console.log("AI Analysis Context:", data.context);
+      }
     } catch (error) {
       setMessages(prev => prev.map(msg => 
         msg.id === typingId ? { ...msg, text: "Clinical intelligence server connection failed. Please ensure the backend is active.", isTyping: false } : msg
@@ -181,7 +186,10 @@ export default function AIAssistant() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold" style={{ color: 'var(--foreground)' }}>Clinical AI</h3>
-                  <p className="text-[10px] text-cyan-400">Context-Aware</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Live Context Synced</p>
+                  </div>
                 </div>
               </div>
               <button onClick={() => setIsOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors" style={{ background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>

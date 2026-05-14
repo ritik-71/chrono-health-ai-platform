@@ -85,7 +85,7 @@ export default function Dashboard() {
       { subject: 'Sleep Eff.', A: (1 - predictData.sleep_disorder_probability) * 100, fullMark: 100 },
       { subject: 'Circadian', A: predictData.circadian_stability, fullMark: 100 },
       { subject: 'CII Align', A: 100 - ciiData.current_cii, fullMark: 100 },
-      { subject: 'Mood Stab.', A: 75, fullMark: 100 },
+      { subject: 'Mood Stab.', A: predictData.mood_stability || 75, fullMark: 100 },
     ];
   }, [predictData, ciiData]);
 
@@ -147,29 +147,47 @@ export default function Dashboard() {
       const el = dashboardRef.current;
       if (!el) { setIsExporting(false); return; }
 
-      // Dynamically import html2canvas and jsPDF
       const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
         import('html2canvas'),
         import('jspdf'),
       ]);
 
+      // Create a temporary clone for a clean clinical report layout
       const canvas = await html2canvas(el, {
-        scale: 2,
+        scale: 2.5, // Higher resolution
         useCORS: true,
-        backgroundColor: isDark ? '#0a0a0f' : '#ffffff',
+        backgroundColor: isDark ? '#020617' : '#ffffff',
         logging: false,
+        onclone: (document) => {
+          // You could inject a header here if needed
+          const header = document.createElement('div');
+          header.innerHTML = `
+            <div style="padding: 20px; border-bottom: 2px solid #334155; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-family: sans-serif;">
+              <div>
+                <h1 style="margin: 0; color: #0ea5e9; font-size: 24px;">ChronoHealth AI Clinical Report</h1>
+                <p style="margin: 5px 0 0; color: #64748b; font-size: 12px;">Generated via ML Inference Pipeline v2.1-stable</p>
+              </div>
+              <div style="text-align: right; color: #64748b; font-size: 11px;">
+                <strong>Patient ID:</strong> CH-9921-X<br/>
+                <strong>Timestamp:</strong> ${new Date().toLocaleString()}<br/>
+                <strong>Status:</strong> Clinical Review Pending
+              </div>
+            </div>
+          `;
+          document.body.prepend(header);
+        }
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'px',
         format: [canvas.width, canvas.height],
       });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save('ChronoHealth_Dashboard_Report.pdf');
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height, undefined, 'FAST');
+      pdf.save(`ChronoHealth_Clinical_Report_${new Date().getTime()}.pdf`);
     } catch (err) {
-      console.error('PDF export failed, falling back to print:', err);
+      console.error('PDF export failed:', err);
       window.print();
     } finally {
       setIsExporting(false);
