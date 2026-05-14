@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import {
-  FileSpreadsheet, Download, RefreshCw, TrendingUp, BarChart2,
+  FileSpreadsheet, RefreshCw, TrendingUp, BarChart2,
   Table2, AlertCircle, CheckCircle2, Filter, ArrowUpDown
 } from "lucide-react";
 import {
@@ -44,13 +44,7 @@ export default function CSVAnalyticsPage() {
     fill: COLORS[i % COLORS.length],
   })) ?? [];
 
-  const exportCSV = () => {
-    const rows = [["filename", "rows", "columns", "completeness", "quality_score", "type", "time"],
-    ...history.map(d => [d.filename, d.rows, d.columns?.length, d.completeness?.toFixed(1), d.quality_score, d.type, d.time])
-    ].map(r => r.join(",")).join("\n");
-    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([rows], { type: "text/csv" })), download: "dataset_analytics.csv" });
-    a.click();
-  };
+
 
   return (
     <div className="p-6 md:p-8 space-y-8 min-h-screen">
@@ -182,10 +176,7 @@ export default function CSVAnalyticsPage() {
                 )}
               </div>
 
-              <button onClick={exportCSV}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 transition text-sm font-medium">
-                <Download className="w-4 h-4" /> Export Summary CSV
-              </button>
+
             </>
           ) : (
             <div className="bg-surface border border-theme rounded-2xl p-16 text-center text-theme-muted">

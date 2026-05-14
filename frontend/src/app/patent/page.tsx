@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   ArrowLeft, Lightbulb, Network, Briefcase, Zap, ShieldCheck, 
-  Cpu, CheckCircle, XCircle, Download 
+  Cpu, CheckCircle, XCircle 
 } from "lucide-react";
 import Link from "next/link";
 
@@ -21,9 +21,6 @@ export default function PatentPage() {
           <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
             <ArrowLeft className="w-5 h-5" /> Back to Home
           </Link>
-          <a href="#" className="flex items-center gap-2 px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-full transition-all text-sm">
-            <Download className="w-4 h-4" /> Intellectual Property PDF
-          </a>
         </div>
       </nav>
 

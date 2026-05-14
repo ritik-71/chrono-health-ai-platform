@@ -7,9 +7,9 @@ import { useChronoTheme } from "@/lib/useChronoTheme";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import {
-  Activity, BrainCircuit, UploadCloud, FileSpreadsheet, Moon, Sun, Menu, Bell,
-  Search, Settings, User, HeartPulse, TrendingUp, Zap, Info, Loader2, MoonStar,
-  MessageSquare, Download, Sparkles, Clock
+  Activity, BrainCircuit, UploadCloud, FileSpreadsheet, Moon, Sun, Menu,
+  Settings, HeartPulse, TrendingUp, Zap, Info, Loader2, MoonStar,
+  MessageSquare, Sparkles, Clock
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -71,7 +71,6 @@ export default function Dashboard() {
   const [ciiData, setCiiData] = useState<any>(null);
   const [rlData, setRlData] = useState<any>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
-  const [isExporting, setIsExporting] = useState(false);
 
   // Memoize active chart data to prevent recalculation on every render
   const activeChartData = React.useMemo(() => {
@@ -130,70 +129,7 @@ export default function Dashboard() {
 
   if (!mounted) return null;
 
-  const handleExportCSV = () => {
-    if (!predictData || !ciiData) return;
-    const csvContent = `data:text/csv;charset=utf-8,Metric,Value\nStress Risk,${predictData.stress_risk}\nSleep Disorder Probability,${predictData.sleep_disorder_probability}\nCircadian Stability,${predictData.circadian_stability}\nMental Fatigue,${predictData.mental_fatigue}\nCII Prediction,${ciiData.current_cii}\nChronotherapy Timing,${predictData.chronotherapy_timing}`;
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "chronohealth_analytics_export.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
-  const handleExportPDF = async () => {
-    setIsExporting(true);
-    try {
-      const el = dashboardRef.current;
-      if (!el) { setIsExporting(false); return; }
-
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import('html2canvas'),
-        import('jspdf'),
-      ]);
-
-      // Create a temporary clone for a clean clinical report layout
-      const canvas = await html2canvas(el, {
-        scale: 2.5, // Higher resolution
-        useCORS: true,
-        backgroundColor: isDark ? '#020617' : '#ffffff',
-        logging: false,
-        onclone: (document) => {
-          // You could inject a header here if needed
-          const header = document.createElement('div');
-          header.innerHTML = `
-            <div style="padding: 20px; border-bottom: 2px solid #334155; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-family: sans-serif;">
-              <div>
-                <h1 style="margin: 0; color: #0ea5e9; font-size: 24px;">ChronoHealth AI Clinical Report</h1>
-                <p style="margin: 5px 0 0; color: #64748b; font-size: 12px;">Generated via ML Inference Pipeline v2.1-stable</p>
-              </div>
-              <div style="text-align: right; color: #64748b; font-size: 11px;">
-                <strong>Patient ID:</strong> CH-9921-X<br/>
-                <strong>Timestamp:</strong> ${new Date().toLocaleString()}<br/>
-                <strong>Status:</strong> Clinical Review Pending
-              </div>
-            </div>
-          `;
-          document.body.prepend(header);
-        }
-      });
-
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'px',
-        format: [canvas.width, canvas.height],
-      });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height, undefined, 'FAST');
-      pdf.save(`ChronoHealth_Clinical_Report_${new Date().getTime()}.pdf`);
-    } catch (err) {
-      console.error('PDF export failed:', err);
-      window.print();
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   return (
     <div ref={dashboardRef} className="w-full h-full overflow-y-auto pb-20 custom-scrollbar">
@@ -213,17 +149,7 @@ export default function Dashboard() {
               Real-time synchronization with clinical ML inference pipelines.
             </motion.p>
           </div>
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
-            className="flex items-center gap-3"
-          >
-            <button onClick={handleExportCSV} className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2" style={{ background: 'var(--surface)', border: '1px solid var(--card-border)' }}>
-              <Download className="w-4 h-4" /> CSV
-            </button>
-            <button onClick={handleExportPDF} disabled={isExporting} className="px-5 py-2.5 rounded-xl text-sm font-bold bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-2 shadow-lg shadow-cyan-600/20 disabled:opacity-50 transition-all">
-              <Download className="w-4 h-4" /> PDF Report
-            </button>
-          </motion.div>
+
         </div>
 
         {/* Primary Metrics Grid */}
