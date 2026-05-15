@@ -2,52 +2,59 @@
 
 ![ChronoHealth Platform Banner](https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80)
 
-**A Unified Chrono-Behavioural Digital Health Platform for the Concurrent Management of Adjustment Disorder and Circadian Rhythm Sleep–Wake Disorders.**
+**A Unified Chrono-Behavioural Digital Health Platform for the Management of Stress and Circadian Rhythm Sleep–Wake Disorders.**
+
+---
+
+## 📖 Final Project Documentation
+For comprehensive technical details, please refer to the following final reports:
+*   [Final Project Overview](./FINAL_PROJECT_OVERVIEW.md)
+*   [System Architecture & Tech Stack](./FINAL_SYSTEM_ARCHITECTURE_AND_TECH_STACK.md)
+*   [AI/ML/RL Implementation](./FINAL_AI_ML_RL_IMPLEMENTATION.md)
+*   [Project Workflow & Pipeline](./FINAL_PROJECT_WORKFLOW_AND_PIPELINE.md)
+*   [Future Scope & Roadmap](./FINAL_FUTURE_SCOPE_AND_IMPROVEMENTS.md)
+*   [PPT & Viva Preparation Guide](./FINAL_PPT_AND_VIVA_GUIDE.md)
 
 ---
 
 ## 📖 Executive Summary
-ChronoHealth.ai is a premium, investor-grade SaaS platform functioning as a digital therapeutic (DTx). It bridges the gap between psychological stress (Adjustment Disorder) and circadian misalignment (CRSWD). By ingesting multi-modal wearable data (HRV, SpO2, Actigraphy), processing it through an XGBoost Machine Learning pipeline, and applying Deep Q-Learning Reinforcement Learning, the platform dynamically schedules Cognitive Behavioral Therapy for Insomnia (CBT-I) and Chronotherapy interventions.
+ChronoHealth.ai is a production-ready Healthcare SaaS platform functioning as a clinical intelligence dashboard. It bridges the gap between psychological stress and circadian misalignment. By ingesting multi-modal physiological data, processing it through an XGBoost/Random Forest pipeline, and applying Reinforcement Learning, the platform provides explainable insights and adaptive intervention scheduling.
 
 ## ✨ Core Features
-1. **Clinical Core Dashboard:** Real-time ML inference visualization using `Recharts` and Framer Motion.
-2. **Dataset Ingestion Engine:** Drag-and-drop CSV/JSON upload pipeline with automated data imputation and feature scoring.
-3. **CII Mathematical Engine:** Live calculation and visualization of the Circadian Interaction Index (CII).
-4. **Q-Learning RL Agent:** Deep reinforcement learning simulation for optimizing chronotherapy scheduling.
-5. **Interactive Architecture Map:** Node-based topological visualization of the system's data flow.
-6. **Clinical AI Assistant:** Context-aware, NLP-simulated chatbot for real-time dataset and formula interpretation.
-7. **JWT Authentication & PDF Exports:** Secure clinical access with printable report generation.
+1. **Clinical AI Dashboard**: Real-time ML inference visualization using `Recharts` and Framer Motion.
+2. **Explainability Center**: SHAP-powered local reasoning explaining the drivers behind every prediction.
+3. **Dataset Ingestion Engine**: Robust CSV/XLSX upload pipeline with automated history recomputation.
+4. **Behavioral Phenotypes**: ML-based clustering to classify patients into behavioral state phenotypes.
+5. **CII Interaction Engine**: Live calculation and visualization of the Circadian Interaction Index (CII).
+6. **RL Intervention Scheduler**: Reinforcement learning simulation for optimizing therapeutic timing.
+7. **Patient Journey Timeline**: Longitudinal recovery tracking with intervention event logs.
 
 ---
 
 ## 🛠️ Technology Stack
 
 **Frontend Layer:**
-- Next.js 15 (App Router)
-- React 19 & TypeScript
-- Tailwind CSS (Deep Dark Mode, Glassmorphism)
-- Framer Motion (Micro-interactions, Page Transitions)
-- Recharts (Dynamic clinical analytics)
-- Lucide React (Iconography)
+- Next.js 14/16 (App Router)
+- Tailwind CSS v4 (Modern UI Architecture)
+- Framer Motion (Micro-interactions)
+- Recharts (Clinical analytics)
 
 **Backend & ML Layer:**
 - FastAPI (Python 3.13)
-- Pandas & NumPy (Data Processing pipeline)
-- Scikit-Learn (Simulated XGBoost Stress Predictors)
-- TensorFlow (Simulated LSTM Sleep Predictors)
-- Uvicorn (ASGI Server)
+- PostgreSQL (Neon Primary / SQLite Fallback)
+- SQLAlchemy (Async ORM)
+- XGBoost & Scikit-Learn (ML Inference)
+- SHAP (Explainability Engine)
 
 ---
 
-## 🚀 Environment Setup & Deployment Guide
+## 🚀 Environment Setup & Deployment
 
 ### Prerequisites
 - Node.js (v18+)
 - Python (3.11+)
-- Git
 
 ### 1. Backend Initialization (FastAPI)
-Navigate to the backend directory and set up the Python environment:
 ```bash
 cd backend
 python -m venv venv
@@ -55,61 +62,36 @@ python -m venv venv
 venv\Scripts\activate
 # Mac/Linux:
 source venv/bin/activate
-
-pip install fastapi uvicorn pydantic pandas numpy scikit-learn
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
-
-**Run the API Server:**
-```bash
-uvicorn main:app --reload --port 8000
-```
-*The backend will now be actively serving ML inferences at `http://localhost:8000`.*
 
 ### 2. Frontend Initialization (Next.js)
-Open a new terminal, navigate to the frontend directory:
 ```bash
 cd frontend
 npm install
-```
-
-**Run the Web Application:**
-```bash
 npm run dev
 ```
-*The platform will be accessible at `http://localhost:3000`.*
 
 ---
 
-## 📡 API Documentation
-
-The FastAPI backend exposes several core endpoints for the DTx pipeline:
+## 📡 Core API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/upload` | `POST` | Ingests `.csv`, `.json`, `.xlsx` datasets. Runs median imputation and returns an AI Quality score alongside column statistics. |
-| `/api/predict` | `GET` | Simulated live inference pulling from XGBoost/LSTM models to output Stress Risk and Circadian Stability percentages. |
-| `/api/v1/predict/patient` | `POST` | Dedicated inference route accepting specific patient payloads (`hrv`, `sleep_duration`) returning customized chronotherapy timings. |
-| `/api/cii` | `GET` | Calculates the mathematical Circadian Interaction Index based on Phase Shift Rates and Stress-Sleep correlations. |
-| `/api/rl/simulation` | `GET` | Outputs Q-Table snapshots, reward optimization curves, and an adaptive timeline generated by the Deep Q-Network agent. |
+| `/api/predict` | `GET` | Latest Stress & Sleep inference for the active dashboard. |
+| `/api/upload` | `POST` | Ingests datasets and triggers the backfill recomputation engine. |
+| `/api/cii` | `GET` | Returns mathematical Circadian Interaction Index and stability metrics. |
+| `/api/explainability/analyze` | `GET/POST` | Generates SHAP feature importance and clinical reasoning cards. |
+| `/api/phenotypes/analyze` | `GET` | Clusters patient data into behavioral phenotype distributions. |
+| `/api/timeline/patient-journey` | `GET` | Fetches longitudinal recovery curves and intervention history. |
 
 ---
 
-## 📈 Production Optimization Improvements
-
-As ChronoHealth transitions from a Capstone Prototype to an Enterprise Production Deployment, the following optimizations are required:
-
-### Infrastructure
-- **Containerization:** Wrap the Next.js frontend and FastAPI backend into isolated **Docker** containers. Use `docker-compose` for local orchestrations.
-- **Database Migration:** Replace the simulated Python arrays and local storage mechanisms with a robust **PostgreSQL** cluster managed via **Prisma ORM** or SQLAlchemy.
-- **Redis Caching:** Implement Redis to cache the heavy Q-Learning matrix calculations and CII inferences, reducing compute overhead on the `/api/cii` endpoint.
-
-### Machine Learning
-- **Model Registry:** Integrate **MLflow** or **Weights & Biases** to version control the XGBoost and LSTM weights instead of hardcoding `.pkl` loading paths.
-- **Asynchronous Queues:** For massive dataset uploads (>100MB), shift the Pandas imputation pipeline into an asynchronous **Celery/RabbitMQ** queue to prevent blocking the FastAPI event loop.
-
-### Security
-- **OAuth2 / SSO:** Upgrade the `localStorage` JWT mockup to strict, HttpOnly secure cookies managed by **NextAuth.js** or **Clerk**, integrating SAML for hospital network SSO.
-- **HIPAA Compliance:** Ensure all payload data in `/api/predict/patient` is strictly anonymized. Use AWS KMS for encrypting patient vectors at rest.
+## 📊 Deployment
+*   **Frontend**: Deployed on **Vercel**.
+*   **Backend**: Deployed on **Render**.
+*   **Database**: Hosted on **Neon PostgreSQL**.
 
 ---
 *Developed by the ChronoHealth AI Research Team. All rights reserved.*
