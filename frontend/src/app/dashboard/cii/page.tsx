@@ -39,7 +39,7 @@ export default function CIIPage() {
         <AlertTriangle className="w-8 h-8 text-amber-500" />
         <p style={{ color: 'var(--muted)' }}>Unable to load live CII data.</p>
         <button 
-          onClick={() => { setLoading(true); fetchCII(); }}
+          onClick={() => { fetchCII(); }}
           className="px-4 py-2 rounded-xl bg-surface border border-theme text-xs hover:bg-white/10 transition"
         >
           Retry Analysis

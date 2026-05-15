@@ -9,6 +9,7 @@ import {
   Sparkles, RefreshCw, AlertTriangle, Eye, ChevronDown, ChevronUp,
   Zap, Shield, BrainCircuit, Activity
 } from "lucide-react";
+import { useAnalytics } from "@/context/AnalyticsContext";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis
