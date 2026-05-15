@@ -28,32 +28,33 @@ const qColor = (v: number): string => {
   return "rgba(244,63,94,0.4)";
 };
 
+import { useAnalytics } from "@/context/AnalyticsContext";
+
 export default function RLSimulationPage() {
-  const [sim, setSim] = useState<any>(null);
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { 
+    rlData: sim, 
+    rlAnalyticsData: analytics, 
+    loading: contextLoading, 
+    refreshAll: fetchData 
+  } = useAnalytics();
   const [isSimulating, setIsSimulating] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [simRes, anaRes] = await Promise.all([
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/rl/simulation`),
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/rl/analytics`),
-      ]);
-      setSim(simRes.data);
-      setAnalytics(anaRes.data);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  }, []);
+  const loading = contextLoading && (!sim || !analytics);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  const handleSimulate = () => {
+  const handleSimulate = async () => {
     setIsSimulating(true);
-    setTimeout(() => { fetchData().then(() => setIsSimulating(false)); }, 1200);
+    try {
+      // RL re-simulation is typically a background task on backend, 
+      // here we just trigger a global refresh to get latest state.
+      await fetchData();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSimulating(false);
+    }
   };
 
-  if (loading || !sim || !analytics) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-full gap-3 text-theme-muted">
         <Activity className="w-6 h-6 animate-spin" /> Loading RL Engine…

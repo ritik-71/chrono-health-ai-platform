@@ -24,8 +24,13 @@ const TARGET_ICONS: Record<string, any> = {
 const shapColor = (v: number) => v >= 0 ? "#f43f5e" : "#06b6d4";
 
 export default function ExplainabilityPage() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { 
+    explainabilityData: data, 
+    loading: contextLoading,
+    refreshAll: fetchGlobalData
+  } = useAnalytics();
+  const [localData, setLocalData] = useState<any>(null);
+  const [localLoading, setLocalLoading] = useState(false);
   const [activeTarget, setActiveTarget] = useState("stress");
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
   const { isDark, tooltipStyle, chartGridStroke, chartTickFill } = useChronoTheme();
@@ -35,35 +40,32 @@ export default function ExplainabilityPage() {
     hrv: 45.5, sleep_duration: 6.2, sleep_quality: 0.7, cortisol_level: 15.0, light_exposure: 5000.0,
   });
 
-  const fetchData = useCallback(async (params?: any) => {
-    setLoading(true);
-    try {
-      const res = params 
-        ? await api.post("/api/explainability/analyze", params)
-        : await api.get("/api/explainability/analyze");
-      
-      setData(res.data);
-      // Sync inputs with what was actually analyzed if it was a default GET
-      if (!params && res.data.inputs) {
-        setInputs(res.data.inputs);
-      }
-    } catch (e) { 
-      console.error("Explainability fetch error:", e);
-      // Ensure we don't stay in infinite loading
-      if (!data) setData({ error: true }); 
-    }
-    finally { setLoading(false); }
-  }, [data]);
+  const loading = localLoading || (contextLoading && !data);
+  const displayData = localData || data;
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    if (data && data.inputs) {
+      setInputs(data.inputs);
+    }
+  }, [data]);
 
   const handleInputChange = (key: string, val: number) => {
     setInputs(prev => ({ ...prev, [key]: val }));
   };
 
-  const handleAnalyze = () => fetchData(inputs);
+  const handleAnalyze = async () => {
+    setLocalLoading(true);
+    try {
+      const res = await api.post("/api/explainability/analyze", inputs);
+      setLocalData(res.data);
+    } catch (e) {
+      console.error("Explainability manual fetch error:", e);
+    } finally {
+      setLocalLoading(false);
+    }
+  };
 
-  if (loading && !data) {
+  if (loading && !displayData) {
     return (
       <div className="flex items-center justify-center h-full gap-3" style={{ color: 'var(--muted)' }}>
         <RefreshCw className="w-6 h-6 animate-spin" /> Computing SHAP explanations…
@@ -71,20 +73,20 @@ export default function ExplainabilityPage() {
     );
   }
 
-  if (!data || data.error) {
+  if (!displayData || displayData.error) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 pb-20" style={{ color: 'var(--muted)' }}>
         <AlertTriangle className="w-10 h-10 text-amber-400" />
         <p className="text-lg font-bold">Explainability engine unavailable.</p>
         <p className="text-sm max-w-md text-center">The SHAP analysis engine is currently synchronizing with the latest clinical data. Please retry in a few moments.</p>
-        <button onClick={() => fetchData()} className="mt-4 px-6 py-3 rounded-xl text-sm font-bold bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-all border border-amber-500/30">
+        <button onClick={() => fetchGlobalData()} className="mt-4 px-6 py-3 rounded-xl text-sm font-bold bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-all border border-amber-500/30">
           Retry Analysis
         </button>
       </div>
     );
   }
 
-  const currentTarget = data.targets[activeTarget];
+  const currentTarget = displayData.targets[activeTarget];
   const targetLabels: Record<string, string> = { stress: "Stress", sleep: "Sleep", fatigue: "Fatigue", circadian: "Circadian" };
 
   // Waterfall data for selected target
@@ -114,7 +116,7 @@ export default function ExplainabilityPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
-              {data.method}
+              {displayData.method}
             </span>
             <button onClick={handleAnalyze} disabled={loading}
               className="flex items-center gap-2 px-4 py-2 rounded-xl transition text-sm disabled:opacity-50" style={{ background: 'var(--surface)', border: '1px solid var(--card-border)' }}>
@@ -155,13 +157,13 @@ export default function ExplainabilityPage() {
           <h3 className="text-sm font-semibold mb-1">Global Feature Importance (mean |SHAP|)</h3>
           <p className="text-xs mb-4" style={{ color: 'var(--muted)' }}>Average absolute SHAP value across all prediction targets — higher = more influential overall.</p>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={data.globalImportance} layout="vertical">
+            <BarChart data={displayData.globalImportance} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
               <XAxis type="number" tick={{ fill: 'var(--chart-tick)', fontSize: 10 }} />
               <YAxis type="category" dataKey="label" width={120} tick={{ fill: 'var(--chart-tick)', fontSize: 11 }} />
               <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="importance" name="Mean |SHAP|" radius={[0, 4, 4, 0]} animationDuration={800}>
-                {data.globalImportance.map((_: any, i: number) => (
+                {displayData.globalImportance.map((_: any, i: number) => (
                   <Cell key={i} fill={["#f59e0b", "#f43f5e", "#8b5cf6", "#06b6d4", "#10b981"][i % 5]} fillOpacity={0.7} />
                 ))}
               </Bar>
@@ -184,7 +186,7 @@ export default function ExplainabilityPage() {
                   style={activeTarget !== key ? { background: 'var(--surface)', border: '1px solid var(--card-border)', color: 'var(--muted)' } : { color: 'var(--foreground)' }}>
                   <span className="font-medium">{label}</span>
                   <span className="text-[10px] font-mono" style={{ color: TARGET_COLORS[key] }}>
-                    {currentTarget && activeTarget === key ? `Driver: ${data.targets[key]?.primaryDriverLabel || "—"}` : ""}
+                    {currentTarget && activeTarget === key ? `Driver: ${displayData.targets[key]?.primaryDriverLabel || "—"}` : ""}
                   </span>
                 </button>
               ))}
@@ -240,7 +242,7 @@ export default function ExplainabilityPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <h3 className="text-sm font-semibold mb-4">Local Explanation Cards</h3>
           <div className="grid lg:grid-cols-2 gap-4">
-            {data.explanationCards.map((card: any, idx: number) => {
+            {displayData.explanationCards.map((card: any, idx: number) => {
               const Icon = TARGET_ICONS[card.target] || Sparkles;
               const isExpanded = expandedCard === idx;
               return (

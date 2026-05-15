@@ -16,26 +16,24 @@ import {
 const COLORS = ["#06b6d4", "#8b5cf6", "#f43f5e", "#10b981", "#f59e0b", "#3b82f6", "#ec4899"];
 const qualityColor = (q: number) => q >= 90 ? "#10b981" : q >= 70 ? "#f59e0b" : "#f43f5e";
 
+import { useAnalytics } from "@/context/AnalyticsContext";
+
 export default function CSVAnalyticsPage() {
-  const [history, setHistory] = useState<any[]>([]);
+  const { 
+    uploadHistoryData: history, 
+    loading: contextLoading, 
+    refreshAll: fetchHistory 
+  } = useAnalytics();
   const [selected, setSelected] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
   const [filterText, setFilterText] = useState("");
 
-  const fetchHistory = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/api/upload/history");
-      setHistory(res.data);
-      if (res.data.length > 0) setSelected(res.data[0]);
-    } catch (e) { 
-      console.error("CSV Analytics fetch error:", e); 
-    } finally { 
-      setLoading(false); 
-    }
-  }, []);
+  const loading = contextLoading && history.length === 0;
 
-  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+  useEffect(() => {
+    if (history.length > 0 && !selected) {
+      setSelected(history[0]);
+    }
+  }, [history, selected]);
 
   const filtered = history.filter(d =>
     d.filename?.toLowerCase().includes(filterText.toLowerCase())

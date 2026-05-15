@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useChronoTheme } from "@/lib/useChronoTheme";
+import { AnalyticsProvider } from "@/context/AnalyticsContext";
 import {
   Activity, BrainCircuit, UploadCloud, FileSpreadsheet, Moon, Sun, Menu,
   Settings, HeartPulse, TrendingUp, Zap, MoonStar, Layers, Clock, Sparkles, Calendar, LogOut, Home, Mail
@@ -171,7 +172,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             ? `radial-gradient(circle at top right, var(--page-gradient-from), transparent 25%), radial-gradient(circle at bottom left, var(--page-gradient-to), transparent 25%)`
             : undefined,
         }}>
-          {children}
+          <AnalyticsProvider>
+            {children}
+          </AnalyticsProvider>
         </div>
       </main>
     </div>

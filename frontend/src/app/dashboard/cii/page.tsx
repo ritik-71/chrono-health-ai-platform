@@ -8,7 +8,7 @@ import {
   Zap, Activity, BrainCircuit, AlertTriangle, CheckCircle, Clock, 
   Info, TrendingUp, Cpu, HeartPulse
 } from "lucide-react";
-import api from "@/lib/api";
+import { useAnalytics } from "@/context/AnalyticsContext";
 import { 
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   PieChart, Pie, Cell
@@ -16,29 +16,12 @@ import {
 
 export default function CIIPage() {
   const { isDark, tooltipStyle } = useChronoTheme();
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { ciiData: data, loading, refreshAll: fetchCII } = useAnalytics();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    fetchCII();
-    const interval = setInterval(fetchCII, 10000); // Live poll every 10s
-    return () => clearInterval(interval);
   }, []);
-
-  const fetchCII = async () => {
-    try {
-      const res = await api.get("/api/cii");
-      if (res.data) {
-        setData(res.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch CII data", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (!mounted || loading) {
     return (

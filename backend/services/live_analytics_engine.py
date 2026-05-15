@@ -27,9 +27,11 @@ class LiveAnalyticsEngine:
         try:
             # 0. Clear old history to make the new dataset the ACTIVE source
             from sqlalchemy import delete
+            from models.analytics_cache import AnalyticsCache
             await db.execute(delete(PredictionHistory).where(PredictionHistory.user_id == user_id))
             await db.execute(delete(CIIHistory).where(CIIHistory.user_id == user_id))
             await db.execute(delete(RLIntervention).where(RLIntervention.user_id == user_id))
+            await db.execute(delete(AnalyticsCache).where(AnalyticsCache.user_id == user_id))
             
             # 1. Data Validation & Schema Normalization
             df = self._normalize_schema(df)

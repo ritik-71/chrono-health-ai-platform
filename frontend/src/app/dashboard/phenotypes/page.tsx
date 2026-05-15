@@ -34,25 +34,21 @@ const RISK_COLORS: Record<string, string> = {
   High: "#f43f5e",
 };
 
+import { useAnalytics } from "@/context/AnalyticsContext";
+
 export default function PhenotypesPage() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { 
+    phenotypesData: data, 
+    loading, 
+    refreshAll: fetchData 
+  } = useAnalytics();
   const [selectedRadar, setSelectedRadar] = useState<string>("Balanced");
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/api/phenotypes/analyze");
-      setData(res.data);
-      if (res.data.dominant) setSelectedRadar(res.data.dominant);
-    } catch (e) { 
-      console.error("Phenotypes fetch error:", e); 
-    } finally { 
-      setLoading(false); 
+  useEffect(() => {
+    if (data && data.dominant) {
+      setSelectedRadar(data.dominant);
     }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+  }, [data]);
 
   if (loading) {
     return (

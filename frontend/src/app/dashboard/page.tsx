@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useChronoTheme } from "@/lib/useChronoTheme";
 import { useRouter } from "next/navigation";
-import api from "@/lib/api";
+import { useAnalytics } from "@/context/AnalyticsContext";
 import {
   Activity, BrainCircuit, UploadCloud, FileSpreadsheet, Moon, Sun, Menu,
   Settings, HeartPulse, TrendingUp, Zap, Info, Loader2, MoonStar,
@@ -62,15 +62,13 @@ const SkeletonCard = React.memo(() => (
 export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const { isDark, tooltipStyle, chartGridStroke, chartTickFill } = useChronoTheme();
-  const [isLoading, setIsLoading] = useState(true);
+  const { 
+    predictData, ciiData, rlData, historyData, 
+    loading: isLoading, refreshAll: fetchData 
+  } = useAnalytics();
+  
   const router = useRouter();
   const dashboardRef = useRef<HTMLDivElement>(null);
-
-  // API States
-  const [predictData, setPredictData] = useState<any>(null);
-  const [ciiData, setCiiData] = useState<any>(null);
-  const [rlData, setRlData] = useState<any>(null);
-  const [historyData, setHistoryData] = useState<any[]>([]);
 
   // Memoize active chart data to prevent recalculation on every render
   const activeChartData = React.useMemo(() => {
@@ -90,40 +88,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     setMounted(true);
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchData = React.useCallback(async () => {
-    if (historyData.length === 0) setIsLoading(true);
-    try {
-      const [resPredict, resCii, resRl, resHistory] = await Promise.all([
-        api.get("/api/predict"),
-        api.get("/api/cii"),
-        api.get("/api/rl/simulation"),
-        api.get("/api/prediction/history")
-      ]);
-
-      if (resPredict.data) setPredictData(resPredict.data);
-      if (resCii.data) setCiiData(resCii.data);
-      if (resRl.data) setRlData(resRl.data);
-
-      if (resHistory.data && Array.isArray(resHistory.data)) {
-        const formattedHistory = resHistory.data.map((d: any) => ({
-          day: d.timestamp ? new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—',
-          stress: d.stress ?? 50,
-          sleep: (d.sleep ?? 70) / 10,
-          hrv: d.stress ?? 50,
-          mood: d.mood ?? 75
-        }));
-        setHistoryData(formattedHistory);
-      }
-    } catch (error) {
-      console.error("Critical Dashboard Fetch Error:", error);
-    } finally {
-      setIsLoading(false);
-    }
   }, []);
 
   if (!mounted) return null;

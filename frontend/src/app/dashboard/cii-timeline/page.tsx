@@ -83,26 +83,14 @@ function HeatmapGrid({ data }: { data: any[] }) {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────
+import { useAnalytics } from "@/context/AnalyticsContext";
+
 export default function CIITimelinePage() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/analytics/cii-timeline`);
-      setData(res.data);
-    } catch (e: any) {
-      console.error(e);
-      setError("Failed to fetch CII timeline analytics.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const { 
+    ciiTimelineData: data, 
+    loading, 
+    refreshAll: fetchData 
+  } = useAnalytics();
 
   if (loading) {
     return (
@@ -112,11 +100,11 @@ export default function CIITimelinePage() {
     );
   }
 
-  if (error || !data) {
+  if (!data) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 text-theme-muted">
         <AlertTriangle className="w-10 h-10 text-amber-400" />
-        <p>{error || "No data available."}</p>
+        <p>No data available.</p>
         <button onClick={fetchData} className="px-4 py-2 rounded-xl bg-surface border border-theme text-sm hover:bg-white/10">
           Retry
         </button>

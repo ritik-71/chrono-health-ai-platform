@@ -27,27 +27,23 @@ const heatVal = (v: number): string => {
   return "rgba(6,182,212,0.75)";
 };
 
+import { useAnalytics } from "@/context/AnalyticsContext";
+
 export default function CorrelationsPage() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { 
+    correlationsData: data, 
+    loading, 
+    refreshAll: fetchData 
+  } = useAnalytics();
   const [activePair, setActivePair] = useState<string | null>(null);
   const [filterStrength, setFilterStrength] = useState<string>("all");
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/api/analytics/correlations");
-      setData(res.data);
-      const pairKeys = Object.keys(res.data?.pairs || {});
-      if (pairKeys.length > 0) setActivePair(pairKeys[0]);
-    } catch (e) { 
-      console.error("Correlations fetch error:", e); 
-    } finally { 
-      setLoading(false); 
+  useEffect(() => {
+    if (data && data.pairs) {
+      const pairKeys = Object.keys(data.pairs);
+      if (pairKeys.length > 0 && !activePair) setActivePair(pairKeys[0]);
     }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+  }, [data, activePair]);
 
   const filteredMatrix = useMemo(() => {
     if (!data?.matrix) return [];

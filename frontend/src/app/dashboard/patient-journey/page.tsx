@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import api from "@/lib/api";
+import { useAnalytics } from "@/context/AnalyticsContext";
 import {
   Activity, Calendar, TrendingDown, TrendingUp, AlertTriangle, RefreshCw,
   Clock, CheckCircle, ShieldAlert, Zap, Moon
@@ -59,24 +59,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function PatientJourneyPage() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { 
+    patientJourneyData: data, 
+    loading, 
+    refreshAll: fetchData 
+  } = useAnalytics();
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/api/timeline/patient-journey");
-      setData(res.data);
-    } catch (e) { 
-      console.error("Patient Journey fetch error:", e); 
-    } finally { 
-      setLoading(false); 
-    }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="flex items-center justify-center h-full gap-3 text-theme-muted">
         <RefreshCw className="w-6 h-6 animate-spin" /> Analyzing patient journey...
@@ -89,7 +78,7 @@ export default function PatientJourneyPage() {
       <div className="flex flex-col items-center justify-center h-full gap-4 text-theme-muted">
         <AlertTriangle className="w-10 h-10 text-amber-400" />
         <p>No patient timeline data available. Ensure predictions and RL history exist.</p>
-        <button onClick={fetchData} className="px-4 py-2 rounded-xl bg-surface border border-theme text-sm hover:bg-white/10">Retry</button>
+        <button onClick={() => fetchData()} className="px-4 py-2 rounded-xl bg-surface border border-theme text-sm hover:bg-white/10">Retry</button>
       </div>
     );
   }

@@ -16,29 +16,19 @@ const sleepStageColors: Record<string, string> = {
   Deep: "#8b5cf6", REM: "#06b6d4", Light: "#f59e0b", Awake: "#f43f5e"
 };
 
+import { useAnalytics } from "@/context/AnalyticsContext";
+
 export default function SleepAnalysisPage() {
   const { isDark, tooltipStyle } = useChronoTheme();
-  const [predData, setPredData] = useState<any | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    predictData: predData, 
+    historyData: globalHistory, 
+    loading: contextLoading,
+    refreshAll: fetchData 
+  } = useAnalytics();
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [pred, hist] = await Promise.all([
-        api.get("/api/predict"),
-        api.get("/api/prediction/history"),
-      ]);
-      setPredData(pred.data);
-      setHistory(hist.data.slice(-14));
-    } catch (e) { 
-      console.error("Sleep Analysis fetch error:", e);
-    } finally { 
-      setLoading(false); 
-    }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const loading = contextLoading && !predData;
+  const history = globalHistory.slice(-14);
 
   const sleepProb = predData ? predData.sleep_disorder_probability : 0;
   const sleepScore = predData ? Math.round((1 - sleepProb) * 100) : 0;

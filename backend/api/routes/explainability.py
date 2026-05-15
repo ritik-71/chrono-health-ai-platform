@@ -47,19 +47,28 @@ async def shap_explain(data: ExplainRequest):
 @router.get("/explainability/analyze")
 async def shap_explain_default(db: AsyncSession = Depends(get_db)):
     """
-    GET version using the latest processed patient data from history — for dashboard auto-load.
+    GET version using cached results or the latest processed patient data.
     """
     try:
         from sqlalchemy.future import select
         from models.prediction import PredictionHistory
+        from models.analytics_cache import AnalyticsCache
+        import json
         
-        # Try to find the latest prediction record to explain
+        # 1. Check Cache First
+        cache_result = await db.execute(
+            select(AnalyticsCache).where(AnalyticsCache.cache_key == "explainability")
+        )
+        cached = cache_result.scalars().first()
+        if cached:
+            return cached.data
+
+        # 2. Cache Miss: Compute from latest record
         history_result = await db.execute(
             select(PredictionHistory).order_by(PredictionHistory.timestamp.desc())
         )
         latest_record = history_result.scalars().first()
         
-        # Use actual stored raw features if available, fallback to defaults only if no records exist
         if latest_record and latest_record.hrv is not None:
             inputs = {
                 "hrv": latest_record.hrv,
@@ -69,17 +78,23 @@ async def shap_explain_default(db: AsyncSession = Depends(get_db)):
                 "light_exposure": latest_record.light_exposure,
             }
         else:
-            # Reconstruct representative inputs based on the latest health state (fallback for legacy records)
             inputs = {
-                "hrv": 45.0 if not latest_record else (55.0 if latest_record.stress_score < 40 else 35.0),
-                "sleep_duration": 7.0 if not latest_record else (latest_record.sleep_score / 10),
-                "sleep_quality": 0.8 if not latest_record else (latest_record.sleep_score / 100),
-                "cortisol_level": 15.0 if not latest_record else (20.0 if latest_record.stress_score > 60 else 12.0),
-                "light_exposure": 5000.0 if not latest_record else (3000.0 if latest_record.cii_score > 50 else 6000.0),
+                "hrv": 45.0, "sleep_duration": 7.0, "sleep_quality": 0.8,
+                "cortisol_level": 15.0, "light_exposure": 5000.0
             }
         
         result = explainability_engine.explain_all(_predictor, inputs)
         result["inputs"] = inputs
+
+        # 3. Store in Cache
+        new_cache = AnalyticsCache(
+            user_id=latest_record.user_id if latest_record else 1, # Default to system user if no history
+            cache_key="explainability",
+            data=result
+        )
+        db.add(new_cache)
+        await db.commit()
+        
         return result
     except Exception as e:
         import traceback

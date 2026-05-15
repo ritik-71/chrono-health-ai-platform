@@ -15,6 +15,7 @@ from models.dataset import UploadedDataset
 from models.prediction import PredictionHistory
 from models.cii import CIIHistory
 from models.rl import RLIntervention 
+from models.analytics_cache import AnalyticsCache
 from api.routes import auth, upload, prediction, cii, rl
 from api.routes import analytics, phenotypes, correlations, explainability, timeline
 

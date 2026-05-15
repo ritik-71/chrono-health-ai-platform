@@ -11,29 +11,19 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend
 } from "recharts";
 
+import { useAnalytics } from "@/context/AnalyticsContext";
+
 export default function StressPredictorPage() {
   const { isDark, tooltipStyle } = useChronoTheme();
-  const [data, setData] = useState<any | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    predictData: data, 
+    historyData: globalHistory, 
+    loading: contextLoading,
+    refreshAll: fetchData 
+  } = useAnalytics();
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [pred, hist] = await Promise.all([
-        api.get("/api/predict"),
-        api.get("/api/prediction/history"),
-      ]);
-      setData(pred.data);
-      setHistory(hist.data.slice(-20));
-    } catch (e) { 
-      console.error("Stress Predictor fetch error:", e);
-    } finally { 
-      setLoading(false); 
-    }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const loading = contextLoading && !data;
+  const history = globalHistory.slice(-20);
 
   const riskColor = (r: string) => r === "Low" ? "#10b981" : r === "Moderate" ? "#f59e0b" : "#f43f5e";
   const riskBg = (r: string) => r === "Low" ? "from-emerald-500/20 to-green-600/10 border-emerald-500/20"

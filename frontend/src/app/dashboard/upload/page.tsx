@@ -13,9 +13,10 @@ import toast, { Toaster } from "react-hot-toast";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell
 } from "recharts";
-import api from "@/lib/api";
+import { useAnalytics } from "@/context/AnalyticsContext";
 
 export default function UploadPage() {
+  const { refreshAll } = useAnalytics();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -63,11 +64,12 @@ export default function UploadPage() {
       clearInterval(progressInterval);
       setProgress(100);
 
-      setTimeout(() => {
+      setTimeout(async () => {
         setResult(response.data);
         setIsUploading(false);
         toast.success("Dataset successfully parsed and analyzed!");
         fetchHistory(); // Refresh history after successful ingestion
+        await refreshAll(); // Trigger global analytics recomputation
       }, 800);
 
     } catch (error: any) {

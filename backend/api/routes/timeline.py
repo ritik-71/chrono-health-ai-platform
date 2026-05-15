@@ -30,11 +30,21 @@ def smooth_curve(data: List[float], alpha: float = 0.3) -> List[float]:
 @router.get("/timeline/patient-journey")
 async def patient_journey_timeline(db: AsyncSession = Depends(get_db)):
     """
-    Constructs a longitudinal timeline combining biomarker evolution
-    (stress, sleep, fatigue, cii) with RL intervention markers to
-    visualize recovery curves and clinical progression.
+    Constructs or retrieves longitudinal timeline analytics combining biomarker evolution
+    with intervention impacts. Uses AnalyticsCache for high performance.
     """
     try:
+        from models.analytics_cache import AnalyticsCache
+        
+        # 1. Check Cache First
+        cache_result = await db.execute(
+            select(AnalyticsCache).where(AnalyticsCache.cache_key == "patient_journey")
+        )
+        cached = cache_result.scalars().first()
+        if cached:
+            return cached.data
+
+        # 2. Cache Miss: Compute Analytics
         # Fetch predictions (chronological)
         pred_result = await db.execute(
             select(PredictionHistory).order_by(PredictionHistory.timestamp.asc()).limit(300)
@@ -50,28 +60,21 @@ async def patient_journey_timeline(db: AsyncSession = Depends(get_db)):
         if not predictions:
             return {"timeline": [], "recoveryStats": {}, "interventions": []}
 
-        # For the demo, we will map "episodes" (indices) to a day-wise logical progression
-        # Assuming each prediction is a "day" for longitudinal visualization
         n_days = len(predictions)
-        
-        # Extract base series
         stress_series = [r.stress_score for r in predictions]
         sleep_series = [r.sleep_score for r in predictions]
         fatigue_series = [r.fatigue_score for r in predictions]
         cii_series = [r.cii_score for r in predictions]
 
-        # Apply EMA smoothing to highlight underlying recovery curves
         stress_smooth = smooth_curve(stress_series, alpha=0.25)
         sleep_smooth = smooth_curve(sleep_series, alpha=0.25)
         fatigue_smooth = smooth_curve(fatigue_series, alpha=0.25)
         cii_smooth = smooth_curve(cii_series, alpha=0.25)
 
-        # Map interventions to specific days (equally spaced if timestamps don't align well, 
-        # but we'll try to use relative index mapping to fit the timeline).
         n_interventions = len(interventions)
         mapped_interventions = {}
         if n_interventions > 0 and n_days > 0:
-            step = max(1, n_days // min(n_interventions, 20)) # cap at 20 markers for clean UI
+            step = max(1, n_days // min(n_interventions, 20))
             for i in range(min(n_interventions, 20)):
                 day_idx = min(i * step + step // 2, n_days - 1)
                 mapped_interventions[day_idx] = {
@@ -79,7 +82,6 @@ async def patient_journey_timeline(db: AsyncSession = Depends(get_db)):
                     "reward": round(interventions[i].reward_score, 1)
                 }
 
-        # Build timeline array
         timeline = []
         for i in range(n_days):
             entry = {
@@ -98,7 +100,6 @@ async def patient_journey_timeline(db: AsyncSession = Depends(get_db)):
                 entry["interventionReward"] = mapped_interventions[i]["reward"]
             timeline.append(entry)
 
-        # Calculate recovery metrics
         def slope(series: List[float]) -> float:
             if len(series) < 2: return 0.0
             x = list(range(len(series)))
@@ -123,14 +124,24 @@ async def patient_journey_timeline(db: AsyncSession = Depends(get_db)):
             "currentCII": cii_smooth[-1],
         }
 
-        # Extract only the intervention markers for quick reference panel
         markers = [{"day": k + 1, **v} for k, v in mapped_interventions.items()]
 
-        return {
+        result = {
             "timeline": timeline,
             "recoveryStats": recovery_stats,
             "interventionMarkers": markers,
         }
+
+        # 3. Store in Cache
+        new_cache = AnalyticsCache(
+            user_id=predictions[0].user_id,
+            cache_key="patient_journey",
+            data=result
+        )
+        db.add(new_cache)
+        await db.commit()
+
+        return result
 
     except Exception as e:
         import traceback
