@@ -1,45 +1,24 @@
-# ChronoHealth AI Platform — PPT & Viva Preparation Guide
+# ChronoHealth AI Platform — PPT & Viva Guide
 
-## 1. High-Level Project Summary
-**ChronoHealth AI** is an AI-powered Healthcare SaaS that uses physiological biomarkers to predict and manage circadian health. It uniquely combines **XGBoost/Random Forest** models with **Reinforcement Learning** for therapeutic intervention scheduling.
+## 📊 Presentation Structure (Recommended Slides)
+1.  **Title Slide**: ChronoHealth AI — Precision Clinical Analytics.
+2.  **Problem Statement**: The "Black Box" of circadian disruption in chronic health.
+3.  **Proposed Solution**: A data-driven, XAI-powered platform for longitudinal health tracking.
+4.  **System Architecture**: Next.js + FastAPI + Async Persistence.
+5.  **Analytics Layer**: CII calculation, SHAP explainability, and DQN simulation.
+6.  **Results & Dashboard**: Visualizing the "Patient Journey" and "Recovery Curves."
+7.  **Future Scope**: IoT integration and Genetic stratification.
 
-## 2. Module-by-Module Explanation
+## 🎙️ Likely Viva Questions & Key Answers
 
-### A. Machine Learning (Stress & Sleep)
-*   **What it does**: Predicts risk levels using physiological data (HRV, Sleep Quality).
-*   **Key Tech**: XGBoost and Scikit-learn.
-*   **Defense**: We use vectorized batch inference to process 7-day history instantly during data uploads.
+### Q1: Why use SHAP for explainability?
+**Answer**: Unlike "Black Box" models, SHAP provides mathematically sound feature contributions, allowing clinicians to see exactly which biomarker (e.g., Cortisol level) drove a "High Stress" prediction.
 
-### B. CII Interaction Engine
-*   **What it does**: Measures the "Circadian Interaction Index".
-*   **Logic**: A mathematical model that correlates stress peaks with sleep troughs.
-*   **Defense**: This provides a unified score for phase alignment, which is more clinically significant than tracking individual metrics in isolation.
+### Q2: How is the CII index calculated?
+**Answer**: The CII (Circadian Interaction Index) is a composite score derived from the phase shift rate, stress-sleep correlation coefficients, and zeitgeber (light) alignment scores.
 
-### C. RL Simulation (Reinforcement Learning)
-*   **What it does**: Recommends the best time for light therapy or CBT-I.
-*   **Key Tech**: Epsilon-Greedy Reward Maximization.
-*   **Defense**: The system "learns" which intervention yields the highest reduction in stress and improvements in sleep quality over time.
+### Q3: What is the benefit of the global analytics persistence layer?
+**Answer**: It ensures that expensive ML results are only computed once after a dataset upload. Navigating through the 10+ dashboard sub-pages becomes near-instant because the data is served from a centralized global state (`AnalyticsContext`).
 
-### D. SHAP Explainability (XAI)
-*   **What it does**: Explains *why* the AI made a certain prediction.
-*   **Defense**: We use SHAP to provide "Clinical Reasoning" cards. This builds trust by showing clinicians that the AI is looking at valid features like HRV or Cortisol.
-
-## 3. Likely Viva Questions & Strong Answers
-
-**Q: Why use FastAPI for the backend?**
-**A**: FastAPI is asynchronous by nature, which is essential for our ML inference pipeline and real-time data polling. It is also much faster than Flask or Django for high-concurrency healthcare applications.
-
-**Q: How do you handle missing data in uploads?**
-**A**: The `LiveAnalyticsEngine` includes a normalization layer that performs feature imputation using mean baseline values (clinically calibrated) to ensure the ML pipeline never crashes.
-
-**Q: Is the data real-time?**
-**A**: The platform supports both static uploads (historical analysis) and simulated real-time polling. The infrastructure is designed to transition to IoT/Wearable streaming via a unified API client.
-
-**Q: What is the most unique part of this project?**
-**A**: The **Recursive Analytics Backfill**. Most health apps only track new data. ChronoHealth recomputes the entire patient history upon every upload to ensure the longitudinal trends and phenotypes are always scientifically accurate.
-
-## 4. Technical Achievements
-*   **Full-stack stabilization**: Restored from performance regressions to 100% production-ready status.
-*   **Hybrid AI/Math model**: Successfully integrated deterministic clinical math with probabilistic machine learning.
-*   **XAI Integration**: Implemented SHAP explainability for clinical transparency.
-*   **Modern UX**: Premium UI with glassmorphism and high-fidelity Framer Motion interactions.
+### Q4: How does the RL Simulation work?
+**Answer**: It uses a Deep Q-Network (DQN) that takes the current health state as input and recommends interventions (e.g., CBT-I) that maximize a reward function based on long-term stability.

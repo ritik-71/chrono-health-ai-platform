@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import api from "@/lib/api";
 import {
   UploadCloud, FileSpreadsheet, CheckCircle, AlertTriangle,
   RefreshCw, BarChart as BarChartIcon, ChevronRight, FileJson, Table, ShieldCheck,

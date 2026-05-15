@@ -1,52 +1,29 @@
 # ChronoHealth AI Platform — System Architecture & Tech Stack
 
-## 1. Technical Stack
+## 🏗️ Architectural Pattern
+The system follows a **Decoupled Analytics Architecture** with a centralized state persistence layer. This ensures that heavy ML/RL computations are performed asynchronously or cached, while the UI remains highly responsive.
 
-### Frontend Layer
-*   **Framework**: Next.js 14/16 (App Router)
-*   **Styling**: Tailwind CSS v4 (Modern CSS Architecture)
-*   **Animations**: Framer Motion (High-performance UI interactions)
-*   **Charts**: Recharts (Dynamic vector-based clinical visualizations)
-*   **Icons**: Lucide React
-*   **API Client**: Axios (Centralized instance with interceptors)
+## 💻 Tech Stack
 
-### Backend Layer
-*   **Framework**: FastAPI (High-performance Asynchronous Python)
-*   **ORM**: SQLAlchemy (Async Engine)
-*   **Validation**: Pydantic v2
-*   **ML Engine**: Scikit-Learn, XGBoost, Pandas, NumPy
-*   **Explainability**: SHAP (TreeExplainer & Perturbation analysis)
+### Frontend (Next.js 16.2 + TypeScript)
+*   **Framework**: Next.js (App Router) for SSR and SEO optimization.
+*   **Styling**: Vanilla CSS + Tailwind-compatible utilities for premium glassmorphism effects.
+*   **Animations**: Framer Motion for high-performance micro-interactions.
+*   **State Management**: `AnalyticsContext` (React Context API) providing global persistence for all clinical metrics.
+*   **Visualizations**: Recharts for interactive, SVG-based clinical charts.
 
-### Persistence & Infrastructure
-*   **Database**: Neon PostgreSQL (Primary), SQLite (Development Fallback)
-*   **Platform**: Render (Backend), Vercel (Frontend)
-*   **Version Control**: Git / GitHub
+### Backend (FastAPI + Python 3.11)
+*   **Framework**: FastAPI for high-concurrency, async API handling.
+*   **ORM**: SQLAlchemy (Async) with PostgreSQL/SQLite.
+*   **Inference Engine**: Custom ML Pipeline using Scikit-learn and NumPy.
+*   **RL Engine**: Deep Q-Network (DQN) implementation for intervention simulations.
+*   **Caching**: `AnalyticsCache` table for persisting expensive analytic results (SHAP, Timeline).
 
-## 2. System Architecture
+### Deployment
+*   **Frontend**: Vercel (Production Build).
+*   **Backend**: Render (Python Environment).
 
-### API Flow
-The platform follows a RESTful architecture with a focus on real-time data consistency.
-1.  **Request**: Frontend sends authenticated requests via the centralized `api` client.
-2.  **Auth**: JWT-based authentication ensures secure access to patient history.
-3.  **Inference**: The `ClinicalPredictor` service runs vectorized batch inference on requested datasets.
-4.  **Database**: Results are persisted in PostgreSQL, enabling longitudinal tracking.
-
-### Upload & Analytics Recomputation Pipeline
-A unique feature of the platform is its **Recursive Analytics Engine**:
-1.  **Ingestion**: User uploads a dataset (CSV/XLSX).
-2.  **Normalization**: `LiveAnalyticsEngine` sanitizes and scales the data.
-3.  **Backfill**: The engine triggers a **Batch Inference** for the entire uploaded history (up to 100 records).
-4.  **CII Calculation**: Circadian Interaction Index is mathematically derived for every point.
-5.  **Persistence**: The previous history is cleared and replaced with the new, higher-fidelity dataset.
-6.  **Refresh**: Frontend pages automatically update via polling/refresh cycles.
-
-### ML/RL Subsystems
-*   **Predictor**: Multi-target model (Stress, Sleep, Fatigue).
-*   **CII Engine**: Correlation-based mathematical model for phase alignment.
-*   **RL Engine**: Epsilon-greedy simulation for optimal intervention scheduling.
-*   **Explainability**: Local SHAP cards explaining individual prediction drivers.
-
-## 3. Deployment Architecture
-*   **Production Frontend**: Hosted on Vercel with automated build optimizations.
-*   **Production Backend**: Hosted on Render with auto-deployment from the `main` branch.
-*   **Database**: Managed Neon PostgreSQL cluster with auto-scaling capabilities.
+## 🛠️ Performance Optimizations
+1.  **Global Analytics Persistence**: Navigation between tabs does not trigger new API calls; data is served from the `AnalyticsContext`.
+2.  **Backend Result Caching**: SHAP explainability and Patient Journey timelines are computed once and stored, drastically reducing CPU load.
+3.  **Parallel Ingestion**: The `refreshAll` mechanism uses `Promise.all` to fetch all core metrics in parallel upon dataset upload.

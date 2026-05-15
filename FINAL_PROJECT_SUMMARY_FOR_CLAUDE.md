@@ -1,33 +1,20 @@
-# ChronoHealth AI Platform — Concise Project Summary (AI-Optimized)
+# ChronoHealth AI Platform — Final Project Summary (Claude-Ready)
 
-## Project Summary
-ChronoHealth AI is a production-ready Healthcare SaaS platform specializing in circadian rhythm analysis, stress prediction, and sleep architecture optimization. It leverages a hybrid AI architecture (XGBoost + Reinforcement Learning) to deliver explainable clinical insights.
+## 📁 Repository Stats
+*   **Tech Stack**: Next.js 16 (App Router), FastAPI, SQLAlchemy, DQN (RL), SHAP (XAI).
+*   **Persistence**: Centralized `AnalyticsContext` + `AnalyticsCache` (SQLAlchemy).
+*   **Performance**: Near-instant navigation; compute-once ingestion.
 
-## Tech Stack
-*   **Frontend**: Next.js 16, Tailwind CSS v4, Framer Motion, Recharts.
-*   **Backend**: FastAPI (Async), SQLAlchemy, PostgreSQL (Neon).
-*   **AI/ML**: Scikit-Learn (RF, K-Means), XGBoost, SHAP (XAI), RL (Epsilon-Greedy).
+## 🏗️ Technical Highlights
+*   **Ingestion Engine**: Handles CSV backfills and batch inference for 100+ health records.
+*   **CII Engine**: Quantifies circadian phase drift using multi-biomarker correlation.
+*   **XAI Layer**: Real-time SHAP analysis for clinical transparency.
+*   **DQN Simulation**: Optimized behavioral intervention scheduling via Reinforcement Learning.
 
-## Major Modules
-1.  **Stress Predictor**: 3-tier risk assessment (XGBoost).
-2.  **Sleep Analysis**: Disorder probability regressor (Random Forest).
-3.  **CII Interaction Engine**: Mathematical circadian stability index.
-4.  **Phenotype Explorer**: ML-based behavioral state clustering.
-5.  **Explainability Center**: SHAP-powered local reasoning cards.
-6.  **RL Intervention Scheduler**: Reinforcement learning for therapy optimization.
-7.  **Patient Journey Timeline**: Longitudinal recovery tracking.
+## ✅ Stability Check
+*   **Vercel/Render Compatibility**: Fully verified.
+*   **Hydration**: Stable client/server boundaries.
+*   **State Management**: Optimized persistence; no redundant API calls.
 
-## Core Workflow
-Dataset Upload → Normalize → Batch Inference (Vectorized) → Recompute Longitudinal Indices → Persistence → Dashboard Visualization (XAI + RL recommendations).
-
-## Strongest Features
-*   **Recursive Analytics Backfill**: Dynamically updates historical trends on every new data ingestion.
-*   **Explainable AI (XAI)**: Native integration of SHAP for clinical transparency.
-*   **High-Aesthetic UI**: Premium design system optimized for clinician and patient UX.
-*   **Hybrid Intelligence**: Blends deterministic clinical formulas with predictive probabilistic models.
-
-## Future Scope
-*   IoT/Wearable integration (Apple HealthKit/Oura).
-*   Deep Q-Learning for multi-variate RL optimizations.
-*   Federated Learning for cross-hospital clinical training.
-*   Enterprise B2B wellness for occupational health sectors.
+## 🎯 Primary Use Case
+Clinicians and researchers can upload longitudinal health data to visualize recovery trends, detect early-stage chronodisruption, and simulate the impact of behavioral protocols before clinical implementation.
