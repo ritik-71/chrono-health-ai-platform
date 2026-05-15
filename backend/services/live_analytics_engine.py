@@ -35,35 +35,32 @@ class LiveAnalyticsEngine:
         df = self._normalize_schema(df)
         
         # 2. Extract Features & Run Batch Inference
-        records_to_add = []
-        cii_records = []
-        
-        # Limit backfill to 100 records to prevent DB bloat/latency
-        process_df = df.head(100)
-        
-        base_time = datetime.utcnow() - timedelta(days=len(process_df))
-        
+        inputs = []
+        process_df = df.head(100) # Limit backfill to 100 records
         for i, (_, row) in enumerate(process_df.iterrows()):
-            # Map columns to predictor features
-            raw_input = {
+            inputs.append({
                 "hrv": float(row.get("hrv", 55.0)),
                 "sleep_duration": float(row.get("sleep_duration", 7.0)),
                 "sleep_quality": float(row.get("sleep_quality", 0.75)),
                 "cortisol_level": float(row.get("cortisol_level", 15.0)),
                 "light_exposure": float(row.get("light_exposure", 5000.0))
-            }
+            })
             
-            # Run inference
-            pred = self.predictor.predict(raw_input)
+        # Execute vectorized inference
+        batch_preds = self.predictor.predict_batch(inputs)
+        
+        records_to_add = []
+        cii_records = []
+        base_time = datetime.utcnow() - timedelta(days=len(process_df))
+        
+        for i, pred in enumerate(batch_preds):
+            raw_input = inputs[i]
+            ts = base_time + timedelta(hours=i*6)
             
-            # Create timestamp for this record
-            ts = base_time + timedelta(hours=i*6) # 4 readings per day
-            
-            # Map stress risk string back to numeric score for the DB
             stress_map = {"Low": 25.0, "Moderate": 55.0, "High": 85.0}
             stress_score = stress_map.get(pred["stress_risk"], 50.0)
             
-            # 3. Create Prediction History Record (including raw features)
+            # 3. Create Prediction History Record
             history_item = PredictionHistory(
                 user_id=user_id,
                 stress_score=stress_score,
@@ -80,9 +77,7 @@ class LiveAnalyticsEngine:
             )
             records_to_add.append(history_item)
             
-            # 4. Create CII History Record (with components)
-            # We derive components from the raw input and prediction results
-            # for a high-fidelity data-driven representation.
+            # 4. Create CII History Record
             rho_comp = max(5.0, min(45.0, (1 - pred["mood_stability"]/100) * 50))
             shift_comp = max(5.0, min(35.0, abs(raw_input["sleep_duration"] - 7.0) * 8))
             zeit_comp = max(5.0, min(30.0, raw_input["light_exposure"] / 500))

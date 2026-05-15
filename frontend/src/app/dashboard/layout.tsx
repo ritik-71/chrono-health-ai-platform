@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import AIAssistant from "@/components/AIAssistant";
 import { useChronoTheme } from "@/lib/useChronoTheme";
 import {
   Activity, BrainCircuit, UploadCloud, FileSpreadsheet, Moon, Sun, Menu,
@@ -175,7 +174,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </div>
       </main>
-      <AIAssistant />
     </div>
   );
 }

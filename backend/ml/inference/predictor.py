@@ -51,6 +51,61 @@ class ClinicalPredictor:
             self.phenotype_model = None
             self.cii_model = None
 
+    def predict_batch(self, feature_rows: List[dict]) -> List[dict]:
+        """
+        High-performance vectorized inference for multiple rows.
+        """
+        if not feature_rows:
+            return []
+            
+        try:
+            # Prepare feature matrix
+            X_raw = np.array([[
+                float(r.get('hrv', 55.0)),
+                float(r.get('sleep_duration', 7.0)),
+                float(r.get('sleep_quality', 0.8)),
+                float(r.get('cortisol_level', 15.0)),
+                float(r.get('light_exposure', 5000.0))
+            ] for r in feature_rows])
+
+            if self.scaler and self.stress_model:
+                X_scaled = self.scaler.transform(X_raw)
+                
+                # Batch predictions
+                stress_classes = self.stress_model.predict(X_scaled)
+                sleep_disorders = self.sleep_model.predict(X_scaled)
+                circadian_stabs = self.circadian_model.predict(X_scaled)
+                fatigue_classes = self.fatigue_model.predict(X_scaled)
+                phenotype_indices = self.phenotype_model.predict(X_scaled)
+                cii_vals = self.cii_model.predict(X_scaled)
+                
+                # Derive probabilities
+                try:
+                    stress_probs = np.max(self.stress_model.predict_proba(X_scaled), axis=1)
+                except:
+                    stress_probs = [0.85] * len(feature_rows)
+                    
+                results = []
+                for i in range(len(feature_rows)):
+                    stress_map = {0: "Low", 1: "Moderate", 2: "High"}
+                    pheno_map = {0: "Balanced", 1: "Stress-Dominant", 2: "Sleep-Dominant", 3: "Comorbid"}
+                    
+                    results.append({
+                        "stress_risk": stress_map.get(int(stress_classes[i]), "Moderate"),
+                        "sleep_disorder_probability": round(float(sleep_disorders[i]), 2),
+                        "circadian_stability": round(float(circadian_stabs[i]), 1),
+                        "mental_fatigue": "High" if fatigue_classes[i] == 2 else ("Moderate" if fatigue_classes[i] == 1 else "Low"),
+                        "cii_prediction": round(float(cii_vals[i]), 1),
+                        "mood_stability": 75.0, # Simplified for batch
+                        "phenotype_classification": pheno_map.get(int(phenotype_indices[i]), "Balanced")
+                    })
+                return results
+            else:
+                return [self._get_safe_fallback() for _ in feature_rows]
+        except Exception as e:
+            print(f"Batch Prediction Error: {e}")
+            return [self._get_safe_fallback() for _ in feature_rows]
+
     def predict(self, raw_data: dict) -> dict:
         """
         Runs REAL inference pipeline using trained models.

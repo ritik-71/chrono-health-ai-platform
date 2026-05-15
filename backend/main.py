@@ -15,7 +15,7 @@ from models.dataset import UploadedDataset
 from models.prediction import PredictionHistory
 from models.cii import CIIHistory
 from models.rl import RLIntervention 
-from api.routes import auth, upload, prediction, cii, rl, assistant
+from api.routes import auth, upload, prediction, cii, rl
 from api.routes import analytics, phenotypes, correlations, explainability, timeline
 
 # Structured Logging Configuration
@@ -114,7 +114,6 @@ app.include_router(upload.router, prefix="/api/upload", tags=["Dataset Ingestion
 app.include_router(prediction.router, prefix="/api", tags=["ML Inference"])
 app.include_router(cii.router, prefix="/api", tags=["CII Engine"])
 app.include_router(rl.router, prefix="/api", tags=["Reinforcement Learning"])
-app.include_router(assistant.router, prefix="/api", tags=["AI Assistant"])
 app.include_router(analytics.router, prefix="/api", tags=["Analytics"])
 app.include_router(phenotypes.router, prefix="/api", tags=["Phenotypes"])
 app.include_router(correlations.router, prefix="/api", tags=["Correlations"])
