@@ -1,24 +1,28 @@
-# ChronoHealth AI Platform — PPT & Viva Guide
+# FINAL: PPT & Viva Guide
 
-## 📊 Presentation Structure (Recommended Slides)
-1.  **Title Slide**: ChronoHealth AI — Precision Clinical Analytics.
-2.  **Problem Statement**: The "Black Box" of circadian disruption in chronic health.
-3.  **Proposed Solution**: A data-driven, XAI-powered platform for longitudinal health tracking.
-4.  **System Architecture**: Next.js + FastAPI + Async Persistence.
-5.  **Analytics Layer**: CII calculation, SHAP explainability, and DQN simulation.
-6.  **Results & Dashboard**: Visualizing the "Patient Journey" and "Recovery Curves."
-7.  **Future Scope**: IoT integration and Genetic stratification.
+## 🎙️ Simplified Architecture Explanation
+"ChronoHealth AI is built on a decoupled Next.js and FastAPI stack. The core innovation is our **Centralized Analytics Layer**, which computes expensive ML/RL results once and persists them in a global state. This allows clinicians to navigate a complex, data-heavy dashboard with zero latency."
 
-## 🎙️ Likely Viva Questions & Key Answers
+## 🧩 Module-by-Module Breakdown
+*   **Stress Predictor**: ML classification of biometric markers.
+*   **CII Engine**: Quantification of circadian disruption/drift.
+*   **RL Simulation**: Optimization of behavioral protocols using DQN.
+*   **Explainability**: SHAP-based clinical reasoning for model transparency.
+*   **Patient Journey**: EMA-smoothed temporal recovery trends.
 
-### Q1: Why use SHAP for explainability?
-**Answer**: Unlike "Black Box" models, SHAP provides mathematically sound feature contributions, allowing clinicians to see exactly which biomarker (e.g., Cortisol level) drove a "High Stress" prediction.
+## ❓ Common Viva Questions & Technical Answers
 
-### Q2: How is the CII index calculated?
-**Answer**: The CII (Circadian Interaction Index) is a composite score derived from the phase shift rate, stress-sleep correlation coefficients, and zeitgeber (light) alignment scores.
+### Q: Why use Reinforcement Learning instead of standard ML?
+**A**: Standard ML is good for prediction, but RL is designed for **optimization**. In chronotherapy, we aren't just predicting a state; we are trying to find the best sequence of interventions (actions) to maximize a long-term stability reward.
 
-### Q3: What is the benefit of the global analytics persistence layer?
-**Answer**: It ensures that expensive ML results are only computed once after a dataset upload. Navigating through the 10+ dashboard sub-pages becomes near-instant because the data is served from a centralized global state (`AnalyticsContext`).
+### Q: What is the benefit of SHAP in healthcare?
+**A**: Trust. Clinicians cannot use "Black Box" models. SHAP decomposes a prediction into specific biomarker contributions (e.g., "HRV decreased the risk by 10%, while Cortisol increased it by 15%").
 
-### Q4: How does the RL Simulation work?
-**Answer**: It uses a Deep Q-Network (DQN) that takes the current health state as input and recommends interventions (e.g., CBT-I) that maximize a reward function based on long-term stability.
+### Q: How do you handle dataset recomputation?
+**A**: When a new dataset is uploaded, the backend clears the previous history, performs a batch backfill of ML predictions, and invalidates all cached analytics, ensuring the dashboard immediately reflects the new data.
+
+## 🏆 Strongest Project Achievements
+1.  **High-Performance Persistence**: Near-instant navigation across 10+ clinical modules.
+2.  **Explainable AI Integration**: Real-time transparency for complex predictions.
+3.  **Adaptive RL Engine**: Dynamic intervention optimization using deep learning.
+4.  **Premium UX**: Industry-level glassmorphism design for clinical decision support.
