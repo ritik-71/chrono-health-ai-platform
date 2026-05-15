@@ -204,6 +204,25 @@ export default function AIAssistant() {
               <div ref={messagesEndRef} />
             </div>
 
+            {messages.length < 5 && (
+              <div className="px-4 pb-2 flex flex-wrap gap-2">
+                {[
+                  "Explain CII Formula", 
+                  "What drives my stress?", 
+                  "Explain Architecture",
+                  "Analyze Dataset"
+                ].map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => { setInput(q); }}
+                    className="text-[10px] px-2 py-1 rounded-full border border-theme hover:bg-cyan-500/10 transition-colors text-theme-muted hover:text-cyan-400"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="p-4" style={{ background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}` }}>
               <div className="relative flex items-center">
                 <input

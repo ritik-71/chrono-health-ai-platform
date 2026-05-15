@@ -20,6 +20,22 @@ from sqlalchemy import func, desc
 _context_cache: Dict[str, Any] = {}
 _CACHE_TTL = 30 # seconds
 
+# Pre-load clinical models for low-latency reasoning
+_predictor = None
+_explainability_engine = None
+
+def _get_clinical_engines():
+    global _predictor, _explainability_engine
+    if _predictor is None:
+        try:
+            from ml.inference.predictor import ClinicalPredictor
+            from ml.explainability_engine import explainability_engine
+            _predictor = ClinicalPredictor()
+            _explainability_engine = explainability_engine
+        except Exception as e:
+            print(f"Failed to load clinical engines: {e}")
+    return _predictor, _explainability_engine
+
 def _get_cached_context() -> Optional[Dict[str, str]]:
     now = time.time()
     if "data" in _context_cache and (now - _context_cache["timestamp"]) < _CACHE_TTL:
@@ -196,10 +212,15 @@ def _summarise_datasets(records: List[dict]) -> str:
     avg_quality = sum(r["quality"] or 0 for r in records) / n if n else 0
     avg_completeness = sum(r["completeness"] or 0 for r in records) / n if n else 0
     latest = records[0]
+    cols_str = ", ".join(latest.get("cols", [])[:8])
+    if len(latest.get("cols", [])) > 8:
+        cols_str += "..."
+        
     return (
         f"{n} datasets uploaded (total rows: {total_rows}). "
         f"Average quality score: {avg_quality:.0f}/100, average completeness: {avg_completeness:.1f}%. "
-        f"Latest upload: '{latest['name']}' ({latest['rows']} rows, quality {latest['quality']}/100, {latest['completeness']:.1f}% complete)."
+        f"Latest upload: '{latest['name']}' ({latest['rows']} rows, quality {latest['quality']}/100, {latest['completeness']:.1f}% complete). "
+        f"Identified columns: [{cols_str}]."
     )
 
 
@@ -230,9 +251,9 @@ async def _summarise_phenotypes(db: AsyncSession) -> str:
 async def _summarise_explainability(db: AsyncSession) -> str:
     """Summarise SHAP feature importance for the latest prediction."""
     try:
-        from ml.explainability_engine import explainability_engine
-        from ml.inference.predictor import ClinicalPredictor
-        predictor = ClinicalPredictor()
+        predictor, explain_engine = _get_clinical_engines()
+        if not predictor or not explain_engine:
+            return "Explainability engine not initialized."
         
         # Get latest prediction record and associated data (we might need to join or assume defaults for missing raw features)
         from models.prediction import PredictionHistory
@@ -258,7 +279,7 @@ async def _summarise_explainability(db: AsyncSession) -> str:
             "light_exposure": 5000
         }
         
-        exp = explainability_engine.explain_all(predictor, real_features)
+        exp = explain_engine.explain_all(predictor, real_features)
         
         importance = exp.get("globalImportance", [])[:3]
         imp_str = ", ".join([f"{i['label']} ({i['importance']:.2f})" for i in importance])
@@ -301,6 +322,7 @@ async def build_context(db: AsyncSession) -> Dict[str, str]:
         "dataset_summary": _summarise_datasets(datasets),
         "phenotype_summary": pheno_summary,
         "explainability_summary": explain_summary,
+        "architecture_summary": _summarise_architecture(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     _set_cached_context(result)
@@ -311,11 +333,14 @@ def format_context_for_prompt(ctx: Dict[str, str]) -> str:
     """Flatten the context dict into a single prompt-ready string."""
     return (
         "=== LIVE PATIENT ANALYTICS CONTEXT ===\n"
-        f"[Datasets] {ctx['dataset_summary']}\n"
-        f"[Predictions] {ctx['prediction_summary']}\n"
-        f"[CII Engine] {ctx['cii_summary']}\n"
-        f"[RL Agent] {ctx['rl_summary']}\n"
-        f"[Snapshot Time] {ctx['timestamp']}\n"
+        f"[Architecture] {ctx.get('architecture_summary')}\n"
+        f"[Datasets] {ctx.get('dataset_summary')}\n"
+        f"[Predictions] {ctx.get('prediction_summary')}\n"
+        f"[Phenotypes] {ctx.get('phenotype_summary')}\n"
+        f"[Explainability] {ctx.get('explainability_summary')}\n"
+        f"[CII Engine] {ctx.get('cii_summary')}\n"
+        f"[RL Agent] {ctx.get('rl_summary')}\n"
+        f"[Snapshot Time] {ctx.get('timestamp')}\n"
         "=== END CONTEXT ===\n"
     )
 
@@ -460,6 +485,17 @@ _RESPONSE_TEMPLATES: Dict[str, List[str]] = {
         "Higher quality correlates with better prediction reliability. "
         "Current predictions: {prediction_summary}",
     ],
+    "project": [
+        "ChronoHealth AI is built on a modern full-stack architecture: {architecture_summary}\n\n"
+        "The backend uses FastAPI for high-performance async processing, while the frontend leverages "
+        "Next.js 14 for a seamless, interactive user experience.",
+        
+        "For the ML pipeline, we use Scikit-learn for classification and TensorFlow/Keras for "
+        "temporal CII forecasting. The SHAP engine provides explainability: {explainability_summary}",
+        
+        "The project's unique value is the Circadian Interaction Index (CII) engine, which models "
+        "physiological coupling. Here's your current status: {cii_summary}",
+    ],
     "general": [
         "Here's your current health analytics snapshot:\n\n"
         "📊 Predictions: {prediction_summary}\n\n"
@@ -496,6 +532,8 @@ def _detect_topic(message: str) -> str:
         return "rl"
     if any(w in msg for w in ["data", "dataset", "upload", "csv", "file", "column", "quality"]):
         return "data"
+    if any(w in msg for w in ["project", "architecture", "viva", "stack", "tech", "build", "fastapi", "nextjs", "react", "ml", "database"]):
+        return "project"
     return "general"
 
 

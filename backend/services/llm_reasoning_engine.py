@@ -32,6 +32,20 @@ REASONING GUIDELINES:
 - Recommend interventions based on RL history (e.g., "Melatonin at 21:00 has historically yielded a high reward score for you").
 - Avoid repetition. Be clinical, empathetic, and highly analytical.
 - If data is missing, state it clearly rather than hallucinating.
+
+PROJECT ARCHITECTURE & VIVA CONTEXT:
+- ChronoHealth AI is a full-stack clinical platform.
+- Frontend: Next.js 14, TypeScript, Recharts, Framer Motion.
+- Backend: FastAPI (Python), SQLAlchemy Async, Pydantic.
+- Database: Neon (PostgreSQL) for production, SQLite (aiosqlite) for local dev.
+- ML Modules: 
+  * Stress/Sleep Predictors: Scikit-learn (RandomForest, XGBoost).
+  * CII Engine: TensorFlow/Keras LSTM for temporal forecasting.
+  * RL Agent: Deep Q-Learning for adaptive chronotherapy scheduling.
+  * Explainability: SHAP (SHapley Additive exPlanations) for feature importance.
+- Key Formulas: 
+  * CII = α·ρ(Stress,Sleep) + β·|PhaseShift| + γ·ZeitgeberWeight.
+  * RL Reward: Optimized based on Stress reduction and Sleep stability.
 """
 
 class LLMReasoningEngine:
