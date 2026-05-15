@@ -99,10 +99,10 @@ export default function Dashboard() {
     if (historyData.length === 0) setIsLoading(true);
     try {
       const [resPredict, resCii, resRl, resHistory] = await Promise.all([
-        api.get("/api/predict").catch(() => ({ data: null })),
-        api.get("/api/cii").catch(() => ({ data: null })),
-        api.get("/api/rl/simulation").catch(() => ({ data: null })),
-        api.get("/api/prediction/history").catch(() => ({ data: [] }))
+        api.get("/api/predict"),
+        api.get("/api/cii"),
+        api.get("/api/rl/simulation"),
+        api.get("/api/prediction/history")
       ]);
 
       if (resPredict.data) setPredictData(resPredict.data);
@@ -122,10 +122,9 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Critical Dashboard Fetch Error:", error);
     } finally {
-      // Ensure loading is cleared
       setIsLoading(false);
     }
-  }, [historyData.length]);
+  }, []);
 
   if (!mounted) return null;
 

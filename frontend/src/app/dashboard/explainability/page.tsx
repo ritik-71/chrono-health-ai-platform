@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "@/lib/api";
 import { useChronoTheme } from "@/lib/useChronoTheme";
 import {
   Sparkles, RefreshCw, AlertTriangle, Eye, ChevronDown, ChevronUp,
@@ -37,10 +38,9 @@ export default function ExplainabilityPage() {
   const fetchData = useCallback(async (params?: any) => {
     setLoading(true);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/explainability/analyze`;
       const res = params 
-        ? await axios.post(url, params)
-        : await axios.get(url);
+        ? await api.post("/api/explainability/analyze", params)
+        : await api.get("/api/explainability/analyze");
       
       setData(res.data);
       // Sync inputs with what was actually analyzed if it was a default GET
@@ -53,7 +53,7 @@ export default function ExplainabilityPage() {
       if (!data) setData({ error: true }); 
     }
     finally { setLoading(false); }
-  }, []);
+  }, [data]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 

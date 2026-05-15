@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "@/lib/api";
 import { useChronoTheme } from "@/lib/useChronoTheme";
 import { Moon, RefreshCw, Clock, TrendingDown, AlertCircle, CheckCircle2, Zap, BrainCircuit } from "lucide-react";
 import {
@@ -25,13 +26,16 @@ export default function SleepAnalysisPage() {
     setLoading(true);
     try {
       const [pred, hist] = await Promise.all([
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/predict`),
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/prediction/history`),
+        api.get("/api/predict"),
+        api.get("/api/prediction/history"),
       ]);
       setPredData(pred.data);
       setHistory(hist.data.slice(-14));
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      console.error("Sleep Analysis fetch error:", e);
+    } finally { 
+      setLoading(false); 
+    }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);

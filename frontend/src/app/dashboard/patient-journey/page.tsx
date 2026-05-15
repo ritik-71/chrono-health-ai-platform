@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "@/lib/api";
 import {
   Activity, Calendar, TrendingDown, TrendingUp, AlertTriangle, RefreshCw,
   Clock, CheckCircle, ShieldAlert, Zap, Moon
@@ -64,10 +65,13 @@ export default function PatientJourneyPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/timeline/patient-journey`);
+      const res = await api.get("/api/timeline/patient-journey");
       setData(res.data);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      console.error("Patient Journey fetch error:", e); 
+    } finally { 
+      setLoading(false); 
+    }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);

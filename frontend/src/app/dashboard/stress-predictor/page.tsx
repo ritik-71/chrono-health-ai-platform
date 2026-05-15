@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "@/lib/api";
 import { useChronoTheme } from "@/lib/useChronoTheme";
 import { HeartPulse, Brain, AlertTriangle, TrendingUp, RefreshCw, Zap, Activity } from "lucide-react";
 import {
@@ -20,13 +21,16 @@ export default function StressPredictorPage() {
     setLoading(true);
     try {
       const [pred, hist] = await Promise.all([
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/predict`),
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/prediction/history`),
+        api.get("/api/predict"),
+        api.get("/api/prediction/history"),
       ]);
       setData(pred.data);
       setHistory(hist.data.slice(-20));
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      console.error("Stress Predictor fetch error:", e);
+    } finally { 
+      setLoading(false); 
+    }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);

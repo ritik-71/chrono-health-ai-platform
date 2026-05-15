@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "@/lib/api";
 import {
   FileSpreadsheet, RefreshCw, TrendingUp, BarChart2,
   Table2, AlertCircle, CheckCircle2, Filter, ArrowUpDown
@@ -24,11 +25,14 @@ export default function CSVAnalyticsPage() {
   const fetchHistory = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/upload/history`);
+      const res = await api.get("/api/upload/history");
       setHistory(res.data);
       if (res.data.length > 0) setSelected(res.data[0]);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      console.error("CSV Analytics fetch error:", e); 
+    } finally { 
+      setLoading(false); 
+    }
   }, []);
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "@/lib/api";
 import {
   GitCompareArrows, RefreshCw, AlertTriangle, Filter, TrendingUp, Info
 } from "lucide-react";
@@ -35,12 +36,15 @@ export default function CorrelationsPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/analytics/correlations`);
+      const res = await api.get("/api/analytics/correlations");
       setData(res.data);
-      const pairKeys = Object.keys(res.data.pairs || {});
+      const pairKeys = Object.keys(res.data?.pairs || {});
       if (pairKeys.length > 0) setActivePair(pairKeys[0]);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      console.error("Correlations fetch error:", e); 
+    } finally { 
+      setLoading(false); 
+    }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);

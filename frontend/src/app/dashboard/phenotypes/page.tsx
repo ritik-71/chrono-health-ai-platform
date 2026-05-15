@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "@/lib/api";
 import {
   BrainCircuit, RefreshCw, AlertTriangle, Users, Shield,
   TrendingUp, Zap, Sparkles
@@ -41,11 +42,14 @@ export default function PhenotypesPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "https://chrono-health-ai-platform.onrender.com"}/api/phenotypes/analyze`);
+      const res = await api.get("/api/phenotypes/analyze");
       setData(res.data);
       if (res.data.dominant) setSelectedRadar(res.data.dominant);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    } catch (e) { 
+      console.error("Phenotypes fetch error:", e); 
+    } finally { 
+      setLoading(false); 
+    }
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
