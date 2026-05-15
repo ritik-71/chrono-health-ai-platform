@@ -306,14 +306,38 @@ async def build_context(db: AsyncSession) -> Dict[str, str]:
     if cached:
         return cached
 
-    preds = await _query_prediction_history(db)
-    ciis = await _query_cii_history(db)
-    rls = await _query_rl_history(db)
-    datasets = await _query_datasets(db)
-    
-    # Advanced analytics
-    pheno_summary = await _summarise_phenotypes(db)
-    explain_summary = await _summarise_explainability(db)
+    import asyncio
+
+    # Run all queries in parallel for maximum speed
+    try:
+        results = await asyncio.gather(
+            _query_prediction_history(db),
+            _query_cii_history(db),
+            _query_rl_history(db),
+            _query_datasets(db),
+            _summarise_phenotypes(db),
+            _summarise_explainability(db),
+            return_exceptions=True
+        )
+        
+        # Safely extract results or use fallbacks for exceptions
+        preds = results[0] if not isinstance(results[0], Exception) else []
+        ciis  = results[1] if not isinstance(results[1], Exception) else []
+        rls   = results[2] if not isinstance(results[2], Exception) else []
+        datasets = results[3] if not isinstance(results[3], Exception) else []
+        pheno_summary = results[4] if not isinstance(results[4], Exception) else "Phenotype analytics currently unavailable."
+        explain_summary = results[5] if not isinstance(results[5], Exception) else "Explainability metrics currently unavailable."
+
+    except Exception as e:
+        print(f"Critical error in parallel context gathering: {e}")
+        return {
+            "prediction_summary": "Analytics engine error.",
+            "cii_summary": "Circadian data unreachable.",
+            "rl_summary": "RL logs unavailable.",
+            "dataset_summary": "Dataset index error.",
+            "architecture_summary": _summarise_architecture(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
 
     result = {
         "prediction_summary": _summarise_predictions(preds),

@@ -57,15 +57,37 @@ class AIService:
         memory = get_memory(session_id)
         memory.add_user(message)
 
-        # -- 3. Generate response ------------------------------------------
-        if llm_reasoning_engine.is_available:
-            response_text = await llm_reasoning_engine.get_reasoned_response(
-                message=message,
-                context_data=analytics_ctx,
-                history=memory.get_messages()[:-1], # pass history excluding current user msg
-                page_context=context
-            )
-        else:
+        # -- 3. Generate response with timeout safety ---------------------
+        import asyncio
+        response_text = ""
+        
+        try:
+            if llm_reasoning_engine.is_available:
+                # Use a 15-second timeout for the LLM call to prevent hanging
+                try:
+                    response_text = await asyncio.wait_for(
+                        llm_reasoning_engine.get_reasoned_response(
+                            message=message,
+                            context_data=analytics_ctx,
+                            history=memory.get_messages()[:-1],
+                            page_context=context
+                        ),
+                        timeout=15.0
+                    )
+                except asyncio.TimeoutError:
+                    print(f"LLM Reasoning timeout for session {session_id}. Falling back.")
+                    response_text = self._fallback_response(message, analytics_ctx, memory)
+                except Exception as e:
+                    print(f"LLM Reasoning internal error: {e}. Falling back.")
+                    response_text = self._fallback_response(message, analytics_ctx, memory)
+            else:
+                response_text = self._fallback_response(message, analytics_ctx, memory)
+        except Exception as global_ai_err:
+            print(f"Global AI Service Error: {global_ai_err}")
+            response_text = self._fallback_response(message, analytics_ctx, memory)
+
+        # Final safety check: Ensure response is never blank
+        if not response_text or len(response_text.strip()) < 5:
             response_text = self._fallback_response(message, analytics_ctx, memory)
 
         memory.add_assistant(response_text)

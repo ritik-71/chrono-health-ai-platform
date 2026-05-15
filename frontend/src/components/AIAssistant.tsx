@@ -137,9 +137,10 @@ export default function AIAssistant() {
       });
       
       const data = await response.json();
+      const aiResponse = data.response || "I apologize, but I'm having trouble processing that specific request. Please try rephrasing or ask about your latest stress analytics.";
       
       setMessages(prev => prev.map(msg => 
-        msg.id === typingId ? { ...msg, text: data.response, isTyping: false } : msg
+        msg.id === typingId ? { ...msg, text: aiResponse, isTyping: false } : msg
       ));
 
       // Optional: Log context for debugging or future UI indicators
@@ -147,8 +148,13 @@ export default function AIAssistant() {
         console.log("AI Analysis Context:", data.context);
       }
     } catch (error) {
+      console.error("AI Assistant Error:", error);
       setMessages(prev => prev.map(msg => 
-        msg.id === typingId ? { ...msg, text: "Clinical intelligence server connection failed. Please ensure the backend is active.", isTyping: false } : msg
+        msg.id === typingId ? { 
+          ...msg, 
+          text: "The clinical intelligence server is currently experiencing high latency. Please check your connection or try again in a few moments.", 
+          isTyping: false 
+        } : msg
       ));
     }
   };
