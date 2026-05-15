@@ -1,4 +1,7 @@
 "use client";
+/**
+ * Global Analytics Context for state persistence across the ChronoHealth Dashboard.
+ */
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import api from "@/lib/api";
